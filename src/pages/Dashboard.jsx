@@ -1,44 +1,42 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
-import { getScoreboard } from '../services/espnApi'
+import { getRecentGames } from '../services/bdlApi'
 import './Dashboard.css'
 
+// Map BDL abbreviations → NBA CDN team IDs for logo URLs
+const TEAM_LOGO_IDS = {
+  ATL: '1610612737', BOS: '1610612738', BKN: '1610612751', CHA: '1610612766',
+  CHI: '1610612741', CLE: '1610612739', DAL: '1610612742', DEN: '1610612743',
+  DET: '1610612765', GSW: '1610612744', HOU: '1610612745', IND: '1610612754',
+  LAC: '1610612746', LAL: '1610612747', MEM: '1610612763', MIA: '1610612748',
+  MIL: '1610612749', MIN: '1610612750', NOP: '1610612740', NYK: '1610612752',
+  OKC: '1610612760', ORL: '1610612753', PHI: '1610612755', PHX: '1610612756',
+  POR: '1610612757', SAC: '1610612758', SAS: '1610612759', TOR: '1610612761',
+  UTA: '1610612762', WAS: '1610612764',
+}
+
+function teamLogo(abbr) {
+  const id = TEAM_LOGO_IDS[abbr]
+  return id ? `https://cdn.nba.com/logos/nba/${id}/primary/L/logo.svg` : null
+}
+
+function TeamLogo({ abbr, size = 40 }) {
+  const src = teamLogo(abbr)
+  if (!src) return <div className="db-logo-fallback" style={{ width: size, height: size }}>{abbr}</div>
+  return <img src={src} alt={abbr} className="db-team-logo" style={{ width: size, height: size }} />
+}
+
 function Dashboard() {
-  // ── Games state ───────────────────────────────
   const [games, setGames] = useState([])
   const [gamesLoading, setGamesLoading] = useState(true)
   const [gamesError, setGamesError] = useState(null)
-  const [lastUpdate, setLastUpdate] = useState(null)
 
-  // ── Fetch today's scoreboard (real-time) ──────
   const fetchGames = () => {
     setGamesLoading(true)
     setGamesError(null)
-    getScoreboard()
+    getRecentGames(8)
       .then(data => {
-        // Transform ESPN events to match Dashboard format
-        const transformed = (data.events || []).slice(0, 6).map(event => {
-          const comp = event.competitions?.[0]
-          const homeTeam = comp?.competitors?.find(c => c.homeAway === 'home')
-          const awayTeam = comp?.competitors?.find(c => c.homeAway === 'away')
-          return {
-            id: event.id,
-            home_team: {
-              abbreviation: homeTeam?.team?.abbreviation || '???',
-              full_name: homeTeam?.team?.displayName || 'Unknown'
-            },
-            visitor_team: {
-              abbreviation: awayTeam?.team?.abbreviation || '???',
-              full_name: awayTeam?.team?.displayName || 'Unknown'
-            },
-            home_team_score: parseInt(homeTeam?.score || 0),
-            visitor_team_score: parseInt(awayTeam?.score || 0),
-            status: comp?.status?.type?.shortDetail || comp?.status?.type?.detail || 'Scheduled',
-            date: event.date
-          }
-        })
-        setGames(transformed)
-        setLastUpdate(new Date())
+        setGames(data.data || [])
         setGamesLoading(false)
       })
       .catch(err => {
@@ -47,86 +45,102 @@ function Dashboard() {
       })
   }
 
-  // ── Auto-refresh every 30 seconds for live games ──────
-  useEffect(() => {
-    fetchGames()
-    const interval = setInterval(fetchGames, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  useEffect(() => { fetchGames() }, [])
 
-  // ── Derive top scoring teams from games ───────
+  // Top scoring teams derived from games
   const topTeams = (() => {
     const map = {}
     games.forEach(g => {
-      if (g.home_team_score) {
-        const k = g.home_team.abbreviation
-        if (!map[k]) map[k] = { name: g.home_team.full_name, abbr: k, total: 0, count: 0 }
-        map[k].total += g.home_team_score
-        map[k].count++
-      }
-      if (g.visitor_team_score) {
-        const k = g.visitor_team.abbreviation
-        if (!map[k]) map[k] = { name: g.visitor_team.full_name, abbr: k, total: 0, count: 0 }
-        map[k].total += g.visitor_team_score
-        map[k].count++
-      }
+      ['home', 'visitor'].forEach(side => {
+        const team = g[`${side}_team`]
+        const score = g[`${side}_team_score`]
+        if (score) {
+          const k = team.abbreviation
+          if (!map[k]) map[k] = { name: team.full_name, abbr: k, total: 0, count: 0 }
+          map[k].total += score
+          map[k].count++
+        }
+      })
     })
     return Object.values(map)
-      .map(t => ({ ...t, avg: Math.round(t.total / t.count) }))
+      .map(t => ({ ...t, avg: (t.total / t.count).toFixed(1) }))
       .sort((a, b) => b.avg - a.avg)
       .slice(0, 5)
   })()
-  const maxAvg = topTeams[0]?.avg || 1
+  const maxAvg = parseFloat(topTeams[0]?.avg) || 1
 
-  // ── Chart: home scores from recent games ──────
-  const chartGames = games.slice(0, 7)
-  const maxScore = chartGames.reduce((m, g) => Math.max(m, g.home_team_score || 0, g.visitor_team_score || 0), 1)
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
   return (
     <Layout>
-      <div className="db-header">
-        <h1 className="db-title">Dashboard</h1>
-        {lastUpdate && (
-          <div className="db-update-info">
-            <span className="db-update-text">Last update: {lastUpdate.toLocaleTimeString()}</span>
-            <button 
-              className="db-refresh-btn" 
-              onClick={fetchGames}
-              disabled={gamesLoading}
-              title="Refresh scores"
-            >
-              🔄
-            </button>
-          </div>
-        )}
+      {/* ── Page header ── */}
+      <div className="db-page-header">
+        <div className="db-breadcrumb">
+          <span className="db-breadcrumb-root">Stats Home</span>
+          <span className="db-breadcrumb-sep">/</span>
+          <span className="db-breadcrumb-current">Dashboard</span>
+        </div>
+        <div className="db-header-row">
+          <h1 className="db-title">LEAGUE STATS</h1>
+          <span className="db-season-badge">2025-26 SEASON</span>
+        </div>
+        <p className="db-date">{today}</p>
       </div>
 
-      {/* Latest Results */}
+      {/* ── Scoreboard ── */}
       <section className="db-section">
-        <h2 className="db-section-title">Latest Results (Live)</h2>
-        {gamesLoading && <div className="db-status-msg db-loading">Loading games…</div>}
-        {gamesError && <div className="db-status-msg db-error">{gamesError}</div>}
-        {!gamesLoading && !gamesError && games.length === 0 && (
-          <div className="db-status-msg">No recent games found.</div>
+        <div className="db-section-header">
+          <h2 className="db-section-title">SCOREBOARD</h2>
+          {gamesError && (
+            <button className="db-retry-btn" onClick={fetchGames}>↻ Retry</button>
+          )}
+        </div>
+
+        {gamesLoading && (
+          <div className="db-loading-row">
+            {[...Array(4)].map((_, i) => <div key={i} className="db-skeleton-card" />)}
+          </div>
         )}
-        <div className="db-results-grid">
+        {gamesError && !gamesLoading && (
+          <div className="db-error-msg">{gamesError}</div>
+        )}
+        {!gamesLoading && !gamesError && games.length === 0 && (
+          <div className="db-empty-msg">No recent games found.</div>
+        )}
+
+        <div className="db-scoreboard-grid">
           {games.map(g => {
-            const homeWon = (g.home_team_score || 0) > (g.visitor_team_score || 0)
+            const homeScore = g.home_team_score ?? null
+            const visScore = g.visitor_team_score ?? null
+            const homeWon = homeScore !== null && visScore !== null && homeScore > visScore
+            const visWon = homeScore !== null && visScore !== null && visScore > homeScore
+            const gameDone = homeScore !== null && visScore !== null
             return (
-              <div key={g.id} className="db-result-card">
-                <div className={`db-result-team-row ${homeWon ? 'db-winner' : ''}`}>
-                  <div className="db-team-badge">{g.home_team.abbreviation}</div>
-                  <span className="db-team-full">{g.home_team.full_name}</span>
-                  <span className="db-team-score">{g.home_team_score ?? '–'}</span>
+              <div key={g.id} className="db-score-card">
+                <div className="db-score-card-header">
+                  <span className="db-game-status">{gameDone ? 'Final' : g.status}</span>
+                  <span className="db-game-date">{g.date?.split('T')[0]}</span>
                 </div>
-                <div className={`db-result-team-row ${!homeWon ? 'db-winner' : ''}`}>
-                  <div className="db-team-badge">{g.visitor_team.abbreviation}</div>
-                  <span className="db-team-full">{g.visitor_team.full_name}</span>
-                  <span className="db-team-score">{g.visitor_team_score ?? '–'}</span>
+                <div className={`db-score-row ${homeWon ? 'db-score-winner' : ''}`}>
+                  <TeamLogo abbr={g.home_team.abbreviation} size={32} />
+                  <div className="db-score-team-info">
+                    <span className="db-score-abbr">{g.home_team.abbreviation}</span>
+                    <span className="db-score-city">{g.home_team.city}</span>
+                  </div>
+                  <span className={`db-score-num ${homeWon ? 'db-score-num--win' : ''}`}>
+                    {homeScore ?? '–'}
+                  </span>
                 </div>
-                <div className="db-result-footer">
-                  <span className="db-result-status">{g.status}</span>
-                  <span className="db-result-date">{g.date?.split('T')[0]}</span>
+                <div className="db-score-divider" />
+                <div className={`db-score-row ${visWon ? 'db-score-winner' : ''}`}>
+                  <TeamLogo abbr={g.visitor_team.abbreviation} size={32} />
+                  <div className="db-score-team-info">
+                    <span className="db-score-abbr">{g.visitor_team.abbreviation}</span>
+                    <span className="db-score-city">{g.visitor_team.city}</span>
+                  </div>
+                  <span className={`db-score-num ${visWon ? 'db-score-num--win' : ''}`}>
+                    {visScore ?? '–'}
+                  </span>
                 </div>
               </div>
             )
@@ -134,46 +148,76 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* Bottom row */}
+      {/* ── Leaders + Chart ── */}
       <div className="db-bottom-row">
-        {/* Top Scoring Teams */}
-        <section className="db-section db-scorers">
-          <h2 className="db-section-title">Top Scoring Teams</h2>
-          {gamesLoading && <div className="db-status-msg db-loading">Loading…</div>}
-          <ul className="db-scorers-list">
-            {topTeams.map((t, i) => (
-              <li key={t.abbr} className="db-scorer-item">
-                <span className="db-scorer-rank">#{i + 1}</span>
-                <div className="db-scorer-info">
-                  <span className="db-scorer-name">{t.abbr}</span>
-                  <span className="db-scorer-pts">{t.avg} PPG</span>
-                </div>
-                <div className="db-scorer-bar-wrap">
-                  <div className="db-bar-track">
-                    <div className="db-bar-fill" style={{ width: `${(t.avg / maxAvg) * 100}%` }} />
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+        {/* Points Per Game Leaders */}
+        <section className="db-section">
+          <div className="db-section-header">
+            <h2 className="db-section-title">POINTS PER GAME</h2>
+            <span className="db-section-sub">TOP SCORING TEAMS</span>
+          </div>
+          {gamesLoading && <div className="db-loading-text">Loading…</div>}
+          {!gamesLoading && (
+            <table className="db-leaders-table">
+              <thead>
+                <tr>
+                  <th className="db-th-rank">RK</th>
+                  <th className="db-th-team">TEAM</th>
+                  <th className="db-th-stat">PPG</th>
+                  <th className="db-th-bar" />
+                </tr>
+              </thead>
+              <tbody>
+                {topTeams.map((t, i) => (
+                  <tr key={t.abbr} className="db-leader-row">
+                    <td className="db-td-rank">{i + 1}</td>
+                    <td className="db-td-team">
+                      <TeamLogo abbr={t.abbr} size={28} />
+                      <div className="db-td-team-names">
+                        <span className="db-td-abbr">{t.abbr}</span>
+                        <span className="db-td-full">{t.name}</span>
+                      </div>
+                    </td>
+                    <td className="db-td-stat">{t.avg}</td>
+                    <td className="db-td-bar">
+                      <div className="db-bar-track">
+                        <div className="db-bar-fill" style={{ width: `${(parseFloat(t.avg) / maxAvg) * 100}%` }} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </section>
 
         {/* Score Chart */}
-        <section className="db-section db-chart-section">
-          <h2 className="db-section-title">Recent Scores</h2>
-          {gamesLoading && <div className="db-status-msg db-loading">Loading…</div>}
-          <div className="db-chart-area">
-            {chartGames.map(g => (
-              <div key={g.id} className="db-chart-col">
-                <div
-                  className="db-bar"
-                  style={{ height: `${Math.round(((g.home_team_score || 0) / maxScore) * 96)}px` }}
-                  title={`${g.home_team.abbreviation}: ${g.home_team_score}`}
-                />
-                <span className="db-chart-label">{g.home_team.abbreviation}</span>
-              </div>
-            ))}
+        <section className="db-section">
+          <div className="db-section-header">
+            <h2 className="db-section-title">RECENT SCORES</h2>
+            <span className="db-section-sub">HOME TEAM PTS</span>
           </div>
+          {gamesLoading && <div className="db-loading-text">Loading…</div>}
+          {!gamesLoading && (
+            <div className="db-chart-wrap">
+              {games.slice(0, 8).map(g => {
+                const score = g.home_team_score || 0
+                const maxScore = Math.max(...games.slice(0, 8).map(x => x.home_team_score || 0), 1)
+                const pct = Math.round((score / maxScore) * 100)
+                return (
+                  <div key={g.id} className="db-chart-col">
+                    <span className="db-chart-val">{score || '–'}</span>
+                    <div className="db-chart-bar-wrap">
+                      <div className="db-chart-bar" style={{ height: `${pct}%` }}
+                        title={`${g.home_team.abbreviation}: ${score}`} />
+                    </div>
+                    <TeamLogo abbr={g.home_team.abbreviation} size={22} />
+                    <span className="db-chart-abbr">{g.home_team.abbreviation}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </section>
       </div>
     </Layout>

@@ -3,6 +3,23 @@ import Layout from '../components/Layout'
 import { getScheduleGames } from '../services/bdlApi'
 import './Schedule.css'
 
+const TEAM_LOGO_IDS = {
+  ATL:'1610612737',BOS:'1610612738',BKN:'1610612751',CHA:'1610612766',
+  CHI:'1610612741',CLE:'1610612739',DAL:'1610612742',DEN:'1610612743',
+  DET:'1610612765',GSW:'1610612744',HOU:'1610612745',IND:'1610612754',
+  LAC:'1610612746',LAL:'1610612747',MEM:'1610612763',MIA:'1610612748',
+  MIL:'1610612749',MIN:'1610612750',NOP:'1610612740',NYK:'1610612752',
+  OKC:'1610612760',ORL:'1610612753',PHI:'1610612755',PHX:'1610612756',
+  POR:'1610612757',SAC:'1610612758',SAS:'1610612759',TOR:'1610612761',
+  UTA:'1610612762',WAS:'1610612764',
+}
+
+function TeamLogo({ abbr, size = 20 }) {
+  const id = TEAM_LOGO_IDS[abbr]
+  if (!id) return <span className="sc-abbr-text">{abbr}</span>
+  return <img src={`https://cdn.nba.com/logos/nba/${id}/primary/L/logo.svg`} alt={abbr} style={{width:size,height:size,objectFit:'contain',flexShrink:0}} />
+}
+
 function weekOf(date) {
   const d = new Date(date)
   // Start of week (Monday)
@@ -81,50 +98,62 @@ export default function Schedule() {
 
   return (
     <Layout>
-      <h1 className="page-title">Schedule</h1>
-
-      {/* Week navigation */}
-      <div className="sched-nav">
-        <button className="sched-nav-btn" onClick={prevWeek}>← Prev week</button>
-        <span className="sched-week-label">{weekLabel()}</span>
-        <button className="sched-nav-btn" onClick={goToday}>Today</button>
-        <button className="sched-nav-btn" onClick={nextWeek}>Next week →</button>
+      <div className="sc-page-header">
+        <div className="sc-breadcrumb">
+          <span className="sc-bc-root">Stats Home</span>
+          <span className="sc-bc-sep">/</span>
+          <span className="sc-bc-cur">Schedule</span>
+        </div>
+        <div className="sc-header-row">
+          <h1 className="sc-title">SCHEDULE</h1>
+          <span className="sc-season-badge">2025-26 SEASON</span>
+        </div>
       </div>
 
-      {loading && <p className="page-status loading">Loading schedule…</p>}
-      {error   && <p className="page-status error">{error}</p>}
+      {/* Week nav */}
+      <div className="sc-nav">
+        <button className="sc-nav-btn" onClick={prevWeek}>← Prev</button>
+        <span className="sc-week-label">{weekLabel()}</span>
+        <button className="sc-nav-btn sc-nav-today" onClick={goToday}>Today</button>
+        <button className="sc-nav-btn" onClick={nextWeek}>Next →</button>
+      </div>
+
+      {loading && <div className="sc-loading-row">{[...Array(7)].map((_,i)=><div key={i} className="sc-skeleton" />)}</div>}
+      {error   && <div className="sc-error">{error}</div>}
 
       {!loading && (
-        <div className="sched-days">
+        <div className="sc-days">
           {days.map(day => (
-            <div key={day} className={`sched-day${day === todayStr ? ' today' : ''}`}>
-              <div className="sched-day-header">
-                <span className="sched-day-label">{labelDay(day)}</span>
-                {day === todayStr && <span className="today-badge">Today</span>}
+            <div key={day} className={`sc-day${day === todayStr ? ' today' : ''}`}>
+              <div className="sc-day-header">
+                <span className="sc-day-label">{labelDay(day)}</span>
+                {day === todayStr && <span className="sc-today-badge">TODAY</span>}
               </div>
 
-              {(byDate[day] || []).length === 0 ? (
-                <p className="sched-no-games">No games</p>
+              {(byDate[day]||[]).length === 0 ? (
+                <div className="sc-no-games">No games</div>
               ) : (
-                (byDate[day] || []).map(g => {
+                (byDate[day]||[]).map(g => {
                   const isFinal = g.status === 'Final' || g.status === 'Final/OT'
                   const homeWon = isFinal && g.home_team_score > g.visitor_team_score
                   const awayWon = isFinal && g.visitor_team_score > g.home_team_score
                   return (
-                    <div key={g.id} className="sched-game">
-                      <div className={`sched-team-row${homeWon ? ' winner' : ''}`}>
-                        <span className="sched-team-abbr">{g.home_team.abbreviation}</span>
-                        <span className="sched-team-name">{g.home_team.full_name}</span>
-                        {isFinal && <span className="sched-score">{g.home_team_score}</span>}
+                    <div key={g.id} className="sc-game">
+                      <div className={`sc-team-row${homeWon ? ' winner' : ''}`}>
+                        <TeamLogo abbr={g.home_team.abbreviation} size={18} />
+                        <span className="sc-team-abbr">{g.home_team.abbreviation}</span>
+                        <span className="sc-team-name">{g.home_team.city}</span>
+                        {isFinal && <span className={`sc-score${homeWon?' sc-score-win':''}`}>{g.home_team_score}</span>}
                       </div>
-                      <div className={`sched-team-row${awayWon ? ' winner' : ''}`}>
-                        <span className="sched-team-abbr">{g.visitor_team.abbreviation}</span>
-                        <span className="sched-team-name">{g.visitor_team.full_name}</span>
-                        {isFinal && <span className="sched-score">{g.visitor_team_score}</span>}
+                      <div className={`sc-team-row${awayWon ? ' winner' : ''}`}>
+                        <TeamLogo abbr={g.visitor_team.abbreviation} size={18} />
+                        <span className="sc-team-abbr">{g.visitor_team.abbreviation}</span>
+                        <span className="sc-team-name">{g.visitor_team.city}</span>
+                        {isFinal && <span className={`sc-score${awayWon?' sc-score-win':''}`}>{g.visitor_team_score}</span>}
                       </div>
-                      <div className="sched-game-footer">
-                        <span className={`pill ${isFinal ? 'pill-green' : 'pill-purple'}`}>{g.status}</span>
-                        {g.postseason && <span className="pill pill-red">Playoffs</span>}
+                      <div className="sc-game-footer">
+                        <span className={`sc-status-tag${isFinal?' final':''}`}>{g.status}</span>
+                        {g.postseason && <span className="sc-playoff-tag">Playoffs</span>}
                       </div>
                     </div>
                   )

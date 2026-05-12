@@ -1,5 +1,109 @@
-/* ── Conference layout ───────────────────────── */
-.teams-confs {
+/* ── Page Header ──────────────────────────────── */
+.tm-page-header { padding: 24px 32px 0; }
+
+.tm-breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.tm-bc-root { color: #1d42ba; cursor: pointer; }
+.tm-bc-root:hover { text-decoration: underline; }
+.tm-bc-sep  { color: #555d7a; }
+.tm-bc-cur  { color: #8899bb; }
+
+.tm-header-row { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+.tm-title { font-size: 26px; font-weight: 900; letter-spacing: 0.04em; color: #fff; margin: 0; }
+.tm-season-badge {
+  background: #1d42ba; color: #fff; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; padding: 3px 10px; border-radius: 3px; text-transform: uppercase;
+}
+
+.tm-loading { padding: 0 32px 20px; color: #556080; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; }
+.tm-error {
+  margin: 0 32px 16px; background: rgba(200,30,40,0.1);
+  border: 1px solid rgba(200,30,40,0.3); color: #ff7b84;
+  padding: 12px 16px; border-radius: 4px; font-size: 13px;
+}
+
+/* ── Conference ────────────────────────────────── */
+.tm-confs { display: flex; flex-direction: column; gap: 40px; padding: 0 32px 40px; }
+
+.tm-conf-header {
+  border-bottom: 2px solid #1d42ba;
+  padding-bottom: 8px; margin-bottom: 20px;
+}
+.tm-conf-title {
+  font-size: 13px; font-weight: 900; letter-spacing: 0.1em;
+  color: #fff; margin: 0; text-transform: uppercase;
+}
+
+/* ── Division ──────────────────────────────────── */
+.tm-division { margin-bottom: 24px; }
+.tm-div-title {
+  font-size: 10px; font-weight: 700; color: #556080;
+  text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 10px;
+}
+
+.tm-list { display: flex; flex-direction: column; gap: 4px; }
+
+/* ── Team row ──────────────────────────────────── */
+.tm-row-wrap {}
+
+.tm-row {
+  display: flex; align-items: center; gap: 14px;
+  background: #0e1220; border: 1px solid #1d2440;
+  border-radius: 4px; padding: 10px 16px;
+  cursor: pointer; transition: border-color 0.12s, background 0.12s;
+}
+.tm-row:hover    { border-color: #1d42ba; background: rgba(29,66,186,0.06); }
+.tm-row.expanded { border-color: #1d42ba; border-radius: 4px 4px 0 0; background: rgba(29,66,186,0.08); }
+
+.tm-logo-fallback {
+  display: flex; align-items: center; justify-content: center;
+  background: #1a2040; border-radius: 50%;
+  font-size: 9px; font-weight: 800; color: #8899bb; flex-shrink: 0;
+}
+
+.tm-row-info { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.tm-row-name { font-size: 14px; font-weight: 800; color: #e0e8ff; letter-spacing: 0.02em; }
+.tm-row-city { font-size: 11px; color: #556080; }
+.tm-row-abbr { font-size: 11px; font-weight: 800; color: #1d42ba; letter-spacing: 0.06em; }
+.tm-chevron  { font-size: 10px; color: #556080; }
+
+/* ── Games panel ───────────────────────────────── */
+.tm-games-panel {
+  background: #0a0e1a; border: 1px solid #1d42ba;
+  border-top: none; border-radius: 0 0 4px 4px; padding: 0;
+}
+.tm-games-loading, .tm-games-empty {
+  padding: 16px 20px; font-size: 12px; color: #556080;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+
+.tm-games-table { width: 100%; border-collapse: collapse; }
+.tm-game-row {
+  border-bottom: 1px solid #131828; transition: background 0.1s;
+}
+.tm-game-row:last-child { border-bottom: none; }
+.tm-game-row:hover { background: rgba(29,66,186,0.07); }
+.tm-game-row td {
+  padding: 9px 16px; font-size: 13px; vertical-align: middle;
+}
+
+.tm-wl {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 3px;
+  font-size: 11px; font-weight: 800;
+}
+.tm-wl.win  { background: rgba(34,197,94,0.12); color: #22c55e; }
+.tm-wl.loss { background: rgba(239,68,68,0.12);  color: #ef4444; }
+
+.tm-g-vs     { font-size: 11px; color: #556080; width: 20px; }
+.tm-g-opp    { display: flex; align-items: center; gap: 8px; font-weight: 800; color: #e0e8ff; }
+.tm-g-score  { font-variant-numeric: tabular-nums; color: #8899bb; font-weight: 600; }
+.tm-g-date   { font-size: 11px; color: #556080; }
+.tm-g-status { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: #445070; text-transform: uppercase; }
+
   display: flex;
   flex-direction: column;
   gap: 30px;

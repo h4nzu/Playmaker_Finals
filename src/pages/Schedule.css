@@ -1,5 +1,121 @@
-/* ── Week nav ────────────────────────────────── */
-.sched-nav {
+/* ── Page Header ──────────────────────────────── */
+.sc-page-header { padding: 24px 32px 0; }
+
+.sc-breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.sc-bc-root { color: #1d42ba; cursor: pointer; }
+.sc-bc-root:hover { text-decoration: underline; }
+.sc-bc-sep  { color: #555d7a; }
+.sc-bc-cur  { color: #8899bb; }
+
+.sc-header-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.sc-title { font-size: 26px; font-weight: 900; letter-spacing: 0.04em; color: #fff; margin: 0; }
+.sc-season-badge {
+  background: #1d42ba; color: #fff; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; padding: 3px 10px; border-radius: 3px; text-transform: uppercase;
+}
+
+/* ── Week nav ──────────────────────────────────── */
+.sc-nav {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 32px 20px; flex-wrap: wrap;
+}
+.sc-nav-btn {
+  padding: 7px 16px; border-radius: 3px;
+  border: 1px solid #1d2440; background: transparent;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  color: #8899bb; cursor: pointer; text-transform: uppercase; transition: all 0.12s;
+}
+.sc-nav-btn:hover   { border-color: #1d42ba; color: #e0e8ff; }
+.sc-nav-today       { border-color: #1d42ba; color: #1d42ba; }
+.sc-nav-today:hover { background: #1d42ba; color: #fff; }
+
+.sc-week-label {
+  flex: 1; text-align: center;
+  font-size: 13px; font-weight: 700; color: #e0e8ff;
+  letter-spacing: 0.04em;
+}
+
+/* ── Loading skeleton ──────────────────────────── */
+.sc-loading-row { display: flex; gap: 10px; padding: 0 32px 20px; overflow: hidden; }
+.sc-skeleton {
+  flex: 1; min-width: 100px; height: 120px;
+  background: linear-gradient(90deg,#1a1e2e 25%,#222840 50%,#1a1e2e 75%);
+  background-size: 400% 100%; animation: sc-shimmer 1.4s infinite;
+  border-radius: 4px; border: 1px solid #1d2440;
+}
+@keyframes sc-shimmer { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+
+.sc-error {
+  margin: 0 32px 16px; background: rgba(200,30,40,0.1);
+  border: 1px solid rgba(200,30,40,0.3); color: #ff7b84;
+  padding: 12px 16px; border-radius: 4px; font-size: 13px;
+}
+
+/* ── Day grid ──────────────────────────────────── */
+.sc-days {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 8px; padding: 0 32px 32px; align-items: start;
+}
+@media (max-width: 1100px) { .sc-days { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 700px)  { .sc-days { grid-template-columns: repeat(2, 1fr); } }
+
+.sc-day {
+  background: #0e1220; border: 1px solid #1d2440;
+  border-radius: 4px; overflow: hidden; min-height: 80px;
+}
+.sc-day.today { border-color: #1d42ba; }
+
+.sc-day-header {
+  padding: 7px 10px 6px; background: #0a0e1a;
+  border-bottom: 1px solid #1d2440;
+  display: flex; align-items: center; justify-content: space-between; gap: 4px;
+}
+.sc-day-label { font-size: 10px; font-weight: 700; color: #8899bb; letter-spacing: 0.06em; text-transform: uppercase; }
+.sc-today-badge {
+  font-size: 8px; font-weight: 800; letter-spacing: 0.06em;
+  background: #1d42ba; color: #fff; padding: 2px 5px; border-radius: 2px;
+}
+
+.sc-no-games { font-size: 11px; color: #2a3355; text-align: center; padding: 14px 8px; margin: 0; }
+
+/* ── Game card ─────────────────────────────────── */
+.sc-game { padding: 7px 10px; border-bottom: 1px solid #131828; }
+.sc-game:last-child { border-bottom: none; }
+
+.sc-team-row {
+  display: flex; align-items: center; gap: 5px; padding: 3px 0;
+}
+.sc-team-row.winner .sc-score    { color: #fff; font-weight: 900; }
+.sc-team-row.winner .sc-team-abbr { color: #4d72f0; }
+
+.sc-abbr-text { font-size: 10px; font-weight: 800; color: #556080; width: 18px; flex-shrink: 0; }
+.sc-team-abbr { font-size: 10px; font-weight: 800; color: #8899bb; letter-spacing: 0.04em; }
+.sc-team-name {
+  font-size: 10px; color: #445070; flex: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sc-score { font-size: 12px; font-weight: 600; color: #8899bb; min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; }
+.sc-score-win { color: #fff; font-weight: 900; }
+
+.sc-game-footer { display: flex; gap: 4px; margin-top: 5px; align-items: center; }
+.sc-status-tag {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 1px 5px; border-radius: 2px;
+  background: rgba(29,66,186,0.12); color: #1d42ba; border: 1px solid rgba(29,66,186,0.25);
+}
+.sc-status-tag.final {
+  background: rgba(34,197,94,0.1); color: #22c55e; border-color: rgba(34,197,94,0.25);
+}
+.sc-playoff-tag {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 1px 5px; border-radius: 2px;
+  background: rgba(234,88,12,0.1); color: #f97316; border: 1px solid rgba(234,88,12,0.25);
+}
+
   display: flex;
   align-items: center;
   gap: 10px;

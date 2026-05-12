@@ -6,9 +6,26 @@ import './Players.css'
 
 const POSITIONS = ['All', 'G', 'F', 'C', 'G-F', 'F-C', 'F-G', 'C-F']
 
+const TEAM_LOGO_IDS = {
+  ATL:'1610612737',BOS:'1610612738',BKN:'1610612751',CHA:'1610612766',
+  CHI:'1610612741',CLE:'1610612739',DAL:'1610612742',DEN:'1610612743',
+  DET:'1610612765',GSW:'1610612744',HOU:'1610612745',IND:'1610612754',
+  LAC:'1610612746',LAL:'1610612747',MEM:'1610612763',MIA:'1610612748',
+  MIL:'1610612749',MIN:'1610612750',NOP:'1610612740',NYK:'1610612752',
+  OKC:'1610612760',ORL:'1610612753',PHI:'1610612755',PHX:'1610612756',
+  POR:'1610612757',SAC:'1610612758',SAS:'1610612759',TOR:'1610612761',
+  UTA:'1610612762',WAS:'1610612764',
+}
+
 function playerAvatarUrl(p) {
   const name = encodeURIComponent(`${p.first_name} ${p.last_name}`)
-  return `https://ui-avatars.com/api/?name=${name}&background=3d1f6e&color=c4a8ff&bold=true&size=128&font-size=0.38`
+  return `https://ui-avatars.com/api/?name=${name}&background=0d1228&color=4d72f0&bold=true&size=128&font-size=0.38`
+}
+
+function TeamBadge({ abbr }) {
+  const id = TEAM_LOGO_IDS[abbr]
+  if (!id) return <span className="pl-team-badge">{abbr}</span>
+  return <img src={`https://cdn.nba.com/logos/nba/${id}/primary/L/logo.svg`} alt={abbr} className="pl-team-logo" />
 }
 
 export default function Players() {
@@ -68,12 +85,23 @@ export default function Players() {
 
   return (
     <Layout>
-      <h1 className="page-title">Players</h1>
+      {/* Page header */}
+      <div className="pl-page-header">
+        <div className="pl-breadcrumb">
+          <span className="pl-bc-root">Stats Home</span>
+          <span className="pl-bc-sep">/</span>
+          <span className="pl-bc-cur">Players</span>
+        </div>
+        <div className="pl-header-row">
+          <h1 className="pl-title">PLAYERS</h1>
+          <span className="pl-season-badge">2025-26 SEASON</span>
+        </div>
+      </div>
 
       {/* Controls */}
-      <div className="players-controls">
-        <div className="players-search">
-          <span>🔍</span>
+      <div className="pl-controls">
+        <div className="pl-search">
+          <span className="pl-search-icon">⌕</span>
           <input
             type="text"
             placeholder="Search by name…"
@@ -81,11 +109,11 @@ export default function Players() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className="players-pos-filters">
+        <div className="pl-pos-filters">
           {POSITIONS.map(pos => (
             <button
               key={pos}
-              className={`pos-btn${posFilter === pos ? ' active' : ''}`}
+              className={`pl-pos-btn${posFilter === pos ? ' active' : ''}`}
               onClick={() => setPosFilter(pos)}
             >
               {pos}
@@ -95,59 +123,50 @@ export default function Players() {
       </div>
 
       {/* Status */}
-      {loading && <p className="page-status loading">Loading players…</p>}
-      {error   && <p className="page-status error">{error}</p>}
+      {loading && <div className="pl-loading-row">{[...Array(6)].map((_,i)=><div key={i} className="pl-skeleton" />)}</div>}
+      {error && <div className="pl-error">{error}</div>}
 
       {/* Grid */}
       {!loading && (
-        <div className="players-grid">
+        <div className="pl-grid">
           {filtered.map(p => (
             <div
               key={p.id}
-              className={`player-card${highlightId === String(p.id) ? ' highlighted' : ''}`}
+              className={`pl-card${highlightId === String(p.id) ? ' highlighted' : ''}`}
             >
-              <div className="player-avatar">
-                <img src={playerAvatarUrl(p)} alt={`${p.first_name} ${p.last_name}`} />
-              </div>
-              <div className="player-info">
-                <span className="player-name">{p.first_name} {p.last_name}</span>
-                {p.jersey_number && (
-                  <span className="player-jersey">#{p.jersey_number}</span>
+              <div className="pl-avatar-wrap">
+                <img src={playerAvatarUrl(p)} alt={`${p.first_name} ${p.last_name}`} className="pl-avatar" />
+                {p.team?.abbreviation && (
+                  <div className="pl-avatar-badge">
+                    <TeamBadge abbr={p.team.abbreviation} />
+                  </div>
                 )}
               </div>
-              <div className="player-meta">
-                <span className="pill pill-purple">{p.position || '—'}</span>
-                <span className="player-team">{p.team?.abbreviation || '—'}</span>
-              </div>
-              <div className="player-details">
-                {p.height && <span>{p.height}</span>}
-                {p.weight && <span>{p.weight} lbs</span>}
-                {p.college && <span className="player-college">{p.college}</span>}
+              <div className="pl-card-body">
+                <div className="pl-name">{p.first_name} {p.last_name}</div>
+                <div className="pl-sub-row">
+                  {p.jersey_number && <span className="pl-jersey">#{p.jersey_number}</span>}
+                  {p.position && <span className="pl-pos-tag">{p.position}</span>}
+                  {p.team?.abbreviation && <span className="pl-team-abbr">{p.team.abbreviation}</span>}
+                </div>
+                <div className="pl-details">
+                  {p.height && <span>{p.height}</span>}
+                  {p.weight && <span>{p.weight} lbs</span>}
+                  {p.college && <span className="pl-college">{p.college}</span>}
+                </div>
               </div>
             </div>
           ))}
           {filtered.length === 0 && !loading && (
-            <p className="page-status">No players found.</p>
+            <div className="pl-empty">No players found.</div>
           )}
         </div>
       )}
 
       {/* Pagination */}
-      <div className="players-pagination">
-        <button
-          className="page-btn"
-          onClick={goPrev}
-          disabled={prevCursors.length === 0}
-        >
-          ← Prev
-        </button>
-        <button
-          className="page-btn"
-          onClick={goNext}
-          disabled={!nextCursor}
-        >
-          Next →
-        </button>
+      <div className="pl-pagination">
+        <button className="pl-page-btn" onClick={goPrev} disabled={prevCursors.length === 0}>← Prev</button>
+        <button className="pl-page-btn" onClick={goNext} disabled={!nextCursor}>Next →</button>
       </div>
     </Layout>
   )

@@ -54,7 +54,7 @@ function PlayerPanel({ label, player, onSelect, onClear }) {
                 {results.map(p => (
                   <div key={p.id} className="compare-result-item" onMouseDown={() => pick(p)}>
                     <div className="compare-result-avatar">
-                      <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(p.first_name+' '+p.last_name)}&background=3d1f6e&color=c4a8ff&bold=true&size=64&font-size=0.38`} alt="" />
+                      <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(p.first_name+' '+p.last_name)}&background=0d1228&color=4d72f0&bold=true&size=64&font-size=0.38`} alt="" />
                     </div>
                     <div>
                       <div className="compare-result-name">{p.first_name} {p.last_name}</div>
@@ -70,7 +70,7 @@ function PlayerPanel({ label, player, onSelect, onClear }) {
       ) : (
         <div className="compare-player-card">
           <div className="compare-player-avatar">
-            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(player.first_name+' '+player.last_name)}&background=3d1f6e&color=c4a8ff&bold=true&size=128&font-size=0.38`} alt={`${player.first_name} ${player.last_name}`} />
+            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(player.first_name+' '+player.last_name)}&background=0d1228&color=4d72f0&bold=true&size=128&font-size=0.38`} alt={`${player.first_name} ${player.last_name}`} />
           </div>
           <div className="compare-player-name">
             {player.first_name} {player.last_name}
@@ -105,7 +105,17 @@ export default function Compare() {
 
   return (
     <Layout>
-      <h1 className="page-title">Compare Players</h1>
+      <div className="cmp-page-header">
+        <div className="cmp-breadcrumb">
+          <span className="cmp-bc-root">Stats Home</span>
+          <span className="cmp-bc-sep">/</span>
+          <span className="cmp-bc-cur">Compare</span>
+        </div>
+        <div className="cmp-header-row">
+          <h1 className="cmp-title">COMPARE PLAYERS</h1>
+          <span className="cmp-season-badge">2025-26 SEASON</span>
+        </div>
+      </div>
 
       <div className="compare-panels">
         <PlayerPanel label="Player A" player={playerA} onSelect={setPlayerA} onClear={() => setPlayerA(null)} />
@@ -122,7 +132,7 @@ export default function Compare() {
           <table className="compare-table">
             <thead>
               <tr>
-                <th className="compare-th compare-th-label">Stat</th>
+                <th className="compare-th compare-th-label">STAT</th>
                 <th className="compare-th">
                   <div className="compare-th-player">
                     <div className="compare-th-avatar">{playerA.first_name?.[0]}{playerA.last_name?.[0]}</div>
