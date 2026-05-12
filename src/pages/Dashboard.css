@@ -1,4 +1,12 @@
-.db-title { font-size:32px; font-weight:900; margin:0 0 26px; color:#c4a8ff; letter-spacing:-0.01em; text-shadow:0 0 28px rgba(123,68,224,0.55); }
+.db-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; }
+.db-title { font-size:32px; font-weight:900; margin:0; color:#c4a8ff; letter-spacing:-0.01em; text-shadow:0 0 28px rgba(123,68,224,0.55); }
+.db-update-info { display:flex; align-items:center; gap:12px; }
+.db-update-text { font-size:12px; color:rgba(196,168,255,0.5); font-weight:500; }
+.db-refresh-btn { width:32px; height:32px; border-radius:50%; background:rgba(123,68,224,0.18); border:1px solid rgba(123,68,224,0.35); color:#c4a8ff; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.db-refresh-btn:hover:not(:disabled) { background:rgba(123,68,224,0.3); border-color:rgba(123,68,224,0.55); box-shadow:0 0 16px rgba(123,68,224,0.35); transform:scale(1.05); }
+.db-refresh-btn:active:not(:disabled) { transform:scale(0.95); }
+.db-refresh-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
 .db-section { background:rgba(255,255,255,0.04); border:1px solid rgba(123,68,224,0.25); border-radius:16px; padding:22px 24px; margin-bottom:22px; backdrop-filter:blur(6px); transition:border-color 0.2s,box-shadow 0.2s; }
 .db-section:hover { border-color:rgba(123,68,224,0.42); box-shadow:0 0 28px rgba(123,68,224,0.1); }
 .db-section-title { font-size:11px; font-weight:800; margin:0 0 16px; color:rgba(196,168,255,0.6); text-transform:uppercase; letter-spacing:0.12em; }

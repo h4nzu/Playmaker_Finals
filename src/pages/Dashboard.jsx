@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
-import { getRecentGames } from '../services/bdlApi'
+import { getScoreboard } from '../services/espnApi'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -8,19 +8,50 @@ function Dashboard() {
   const [games, setGames] = useState([])
   const [gamesLoading, setGamesLoading] = useState(true)
   const [gamesError, setGamesError] = useState(null)
+  const [lastUpdate, setLastUpdate] = useState(null)
 
-  // ── Fetch recent games on mount ───────────────
-  useEffect(() => {
+  // ── Fetch today's scoreboard (real-time) ──────
+  const fetchGames = () => {
     setGamesLoading(true)
-    getRecentGames(6)
+    setGamesError(null)
+    getScoreboard()
       .then(data => {
-        setGames(data.data || [])
+        // Transform ESPN events to match Dashboard format
+        const transformed = (data.events || []).slice(0, 6).map(event => {
+          const comp = event.competitions?.[0]
+          const homeTeam = comp?.competitors?.find(c => c.homeAway === 'home')
+          const awayTeam = comp?.competitors?.find(c => c.homeAway === 'away')
+          return {
+            id: event.id,
+            home_team: {
+              abbreviation: homeTeam?.team?.abbreviation || '???',
+              full_name: homeTeam?.team?.displayName || 'Unknown'
+            },
+            visitor_team: {
+              abbreviation: awayTeam?.team?.abbreviation || '???',
+              full_name: awayTeam?.team?.displayName || 'Unknown'
+            },
+            home_team_score: parseInt(homeTeam?.score || 0),
+            visitor_team_score: parseInt(awayTeam?.score || 0),
+            status: comp?.status?.type?.shortDetail || comp?.status?.type?.detail || 'Scheduled',
+            date: event.date
+          }
+        })
+        setGames(transformed)
+        setLastUpdate(new Date())
         setGamesLoading(false)
       })
       .catch(err => {
         setGamesError(err.message)
         setGamesLoading(false)
       })
+  }
+
+  // ── Auto-refresh every 30 seconds for live games ──────
+  useEffect(() => {
+    fetchGames()
+    const interval = setInterval(fetchGames, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   // ── Derive top scoring teams from games ───────
@@ -53,11 +84,26 @@ function Dashboard() {
 
   return (
     <Layout>
-      <h1 className="db-title">Dashboard</h1>
+      <div className="db-header">
+        <h1 className="db-title">Dashboard</h1>
+        {lastUpdate && (
+          <div className="db-update-info">
+            <span className="db-update-text">Last update: {lastUpdate.toLocaleTimeString()}</span>
+            <button 
+              className="db-refresh-btn" 
+              onClick={fetchGames}
+              disabled={gamesLoading}
+              title="Refresh scores"
+            >
+              🔄
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Latest Results */}
       <section className="db-section">
-        <h2 className="db-section-title">Latest Results</h2>
+        <h2 className="db-section-title">Latest Results (Live)</h2>
         {gamesLoading && <div className="db-status-msg db-loading">Loading games…</div>}
         {gamesError && <div className="db-status-msg db-error">{gamesError}</div>}
         {!gamesLoading && !gamesError && games.length === 0 && (
