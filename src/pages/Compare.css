@@ -101,13 +101,12 @@
 .compare-result-avatar {
   width: 30px; height: 30px;
   border-radius: 50%;
-  background: #ede9f8;
-  color: #7b44e0;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
   flex-shrink: 0;
+  border: 1px solid rgba(123,68,224,0.3);
 }
+
+.compare-result-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; }
 
 .compare-result-name { font-size: 13px; font-weight: 600; color: #1a1a2e; }
 .compare-result-meta { font-size: 11px; color: #888; }
@@ -123,15 +122,14 @@
 }
 
 .compare-player-avatar {
-  width: 72px; height: 72px;
+  width: 90px; height: 90px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ede9f8, #c8bcf0);
-  color: #7b44e0;
-  font-size: 22px;
-  font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
-  border: 3px solid #c0b0f0;
+  overflow: hidden;
+  border: 3px solid rgba(123,68,224,0.5);
+  box-shadow: 0 0 20px rgba(123,68,224,0.35);
 }
+
+.compare-player-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; }
 
 .compare-player-name {
   font-size: 16px;

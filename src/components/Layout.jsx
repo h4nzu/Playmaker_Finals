@@ -99,7 +99,9 @@ export default function Layout({ children }) {
                     className="layout-dropdown-item"
                     onMouseDown={() => handlePlayerClick(p)}
                   >
-                    <div className="layout-dd-avatar">{p.first_name?.[0]}{p.last_name?.[0]}</div>
+                    <div className="layout-dd-avatar" style={{padding:0,overflow:'hidden'}}>
+                      <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(p.first_name+' '+p.last_name)}&background=3d1f6e&color=c4a8ff&bold=true&size=64&font-size=0.38`} alt="" style={{width:'100%',height:'100%',display:'block'}} />
+                    </div>
                     <div className="layout-dd-info">
                       <span className="layout-dd-name">{p.first_name} {p.last_name}</span>
                       <span className="layout-dd-meta">

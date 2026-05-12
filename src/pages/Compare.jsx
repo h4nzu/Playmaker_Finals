@@ -53,7 +53,9 @@ function PlayerPanel({ label, player, onSelect, onClear }) {
               <div className="compare-results">
                 {results.map(p => (
                   <div key={p.id} className="compare-result-item" onMouseDown={() => pick(p)}>
-                    <div className="compare-result-avatar">{p.first_name?.[0]}{p.last_name?.[0]}</div>
+                    <div className="compare-result-avatar">
+                      <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(p.first_name+' '+p.last_name)}&background=3d1f6e&color=c4a8ff&bold=true&size=64&font-size=0.38`} alt="" />
+                    </div>
                     <div>
                       <div className="compare-result-name">{p.first_name} {p.last_name}</div>
                       <div className="compare-result-meta">{p.position || '—'} · {p.team?.abbreviation || '—'}</div>
@@ -68,7 +70,7 @@ function PlayerPanel({ label, player, onSelect, onClear }) {
       ) : (
         <div className="compare-player-card">
           <div className="compare-player-avatar">
-            {player.first_name?.[0]}{player.last_name?.[0]}
+            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(player.first_name+' '+player.last_name)}&background=3d1f6e&color=c4a8ff&bold=true&size=128&font-size=0.38`} alt={`${player.first_name} ${player.last_name}`} />
           </div>
           <div className="compare-player-name">
             {player.first_name} {player.last_name}

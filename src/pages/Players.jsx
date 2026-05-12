@@ -6,6 +6,11 @@ import './Players.css'
 
 const POSITIONS = ['All', 'G', 'F', 'C', 'G-F', 'F-C', 'F-G', 'C-F']
 
+function playerAvatarUrl(p) {
+  const name = encodeURIComponent(`${p.first_name} ${p.last_name}`)
+  return `https://ui-avatars.com/api/?name=${name}&background=3d1f6e&color=c4a8ff&bold=true&size=128&font-size=0.38`
+}
+
 export default function Players() {
   const [searchParams] = useSearchParams()
   const highlightId = searchParams.get('highlight')
@@ -102,7 +107,7 @@ export default function Players() {
               className={`player-card${highlightId === String(p.id) ? ' highlighted' : ''}`}
             >
               <div className="player-avatar">
-                {p.first_name?.[0]}{p.last_name?.[0]}
+                <img src={playerAvatarUrl(p)} alt={`${p.first_name} ${p.last_name}`} />
               </div>
               <div className="player-info">
                 <span className="player-name">{p.first_name} {p.last_name}</span>
