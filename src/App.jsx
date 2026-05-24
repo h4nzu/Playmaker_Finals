@@ -6,6 +6,7 @@ import Players   from './pages/Players.jsx'
 import Teams     from './pages/Teams.jsx'
 import Schedule  from './pages/Schedule.jsx'
 import Compare   from './pages/Compare.jsx'
+import Login from './pages/Login.jsx'
 import './App.css'
 
 const LOGO_URL = 'https://res.cloudinary.com/dv3eeuy4b/image/upload/v1778557328/LOGO_umlvbk.png'
@@ -16,7 +17,7 @@ function Home() {
 
   function handleTitleClick() {
     setLaunching(true)
-    setTimeout(() => navigate('/dashboard'), 900)
+    setTimeout(() => navigate('/login'), 900)
   }
 
   return (
@@ -90,6 +91,7 @@ function App() {
       <Route path="/teams"     element={<Teams />} />
       <Route path="/schedule"  element={<Schedule />} />
       <Route path="/compare"   element={<Compare />} />
+      <Route path="/login" element={<Login />} />
     </Routes>
     </RouteTransition>
   )
