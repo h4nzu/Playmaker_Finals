@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { getPlayers } from '../services/backendApi'
 import './Players.css'
@@ -42,6 +42,7 @@ function TeamBadge({ abbr }) {
 
 export default function Players() {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const highlightId = searchParams.get('highlight')
 
   const [search, setSearch] = useState('')
@@ -148,6 +149,8 @@ export default function Players() {
             <div
               key={p.id}
               className={`pl-card${highlightId === String(p.id) ? ' highlighted' : ''}`}
+              onClick={() => navigate(`/players/${p.id}`)}
+              style={{ cursor: 'pointer' }}
             >
               <div className="pl-avatar-wrap">
                 <img

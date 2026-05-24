@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import BballLoader from './components/BballLoader.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Players   from './pages/Players.jsx'
+import PlayerProfile from './pages/PlayerProfile.jsx'
 import Teams     from './pages/Teams.jsx'
 import Schedule  from './pages/Schedule.jsx'
 import Compare   from './pages/Compare.jsx'
@@ -87,6 +88,7 @@ function App() {
       <Route path="/"          element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/players"   element={<Players />} />
+      <Route path="/players/:playerId" element={<PlayerProfile />} />
       <Route path="/teams"     element={<Teams />} />
       <Route path="/schedule"  element={<Schedule />} />
       <Route path="/compare"   element={<Compare />} />

@@ -29,11 +29,20 @@ export default function Teams() {
   const [expandedId, setExpandedId] = useState(null)
   const [teamGames, setTeamGames] = useState({})
   const [gamesLoading, setGamesLoading] = useState({})
+  const [viewMode, setViewMode] = useState('standings') // standings, postseason, playoffs
 
   useEffect(() => {
     getTeams()
       .then(data => {
-        setTeams(data.data || [])
+        const teamsData = data.data || []
+        // Mock standings data - in a real app this would come from the API
+        const teamsWithStandings = teamsData.map(team => ({
+          ...team,
+          wins: Math.floor(Math.random() * 25) + 35,
+          losses: Math.floor(Math.random() * 25) + 25,
+          gamesBack: Math.random() * 15,
+        }))
+        setTeams(teamsWithStandings)
         setLoading(false)
       })
       .catch(err => {
@@ -59,10 +68,16 @@ export default function Teams() {
     }
   }
 
+  // Sort teams by wins
+  const sortedTeams = [...teams].sort((a, b) => {
+    const aWinPct = a.wins / (a.wins + a.losses)
+    const bWinPct = b.wins / (b.wins + b.losses)
+    return bWinPct - aWinPct
+  })
+
   const grouped = CONF_ORDER.reduce((acc, conf) => {
-    acc[conf] = teams
+    acc[conf] = sortedTeams
       .filter(t => t.conference === conf)
-      .sort((a, b) => a.division.localeCompare(b.division))
     return acc
   }, {})
 
@@ -80,77 +95,140 @@ export default function Teams() {
         </div>
       </div>
 
+      {/* View Mode Buttons */}
+      <div className="tm-controls">
+        <div className="tm-view-buttons">
+          <button
+            className={`tm-view-btn${viewMode === 'standings' ? ' active' : ''}`}
+            onClick={() => setViewMode('standings')}
+          >
+            Standings
+          </button>
+          <button
+            className={`tm-view-btn${viewMode === 'postseason' ? ' active' : ''}`}
+            onClick={() => setViewMode('postseason')}
+          >
+            Post Season
+          </button>
+          <button
+            className={`tm-view-btn${viewMode === 'playoffs' ? ' active' : ''}`}
+            onClick={() => setViewMode('playoffs')}
+          >
+            Playoffs
+          </button>
+        </div>
+      </div>
+
       {loading && <div className="tm-loading">Loading teams…</div>}
       {error && <div className="tm-error">{error}</div>}
 
-      <div className="tm-confs">
-        {CONF_ORDER.map(conf => (
-          <div key={conf} className="tm-conf">
-            <div className="tm-conf-header">
-              <h2 className="tm-conf-title">{conf.toUpperCase()}ERN CONFERENCE</h2>
-            </div>
+      {/* Standings View */}
+      {viewMode === 'standings' && (
+        <div className="tm-confs">
+          {CONF_ORDER.map(conf => (
+            <div key={conf} className="tm-conf">
+              <div className="tm-conf-header">
+                <h2 className="tm-conf-title">{conf.toUpperCase()}ERN CONFERENCE</h2>
+              </div>
 
-            {['Atlantic','Central','Southeast','Northwest','Pacific','Southwest']
-              .filter(div => (grouped[conf]||[]).some(t => t.division === div))
-              .map(div => (
-                <div key={div} className="tm-division">
-                  <h3 className="tm-div-title">{div}</h3>
-                  <div className="tm-list">
-                    {(grouped[conf]||[]).filter(t => t.division === div).map(team => (
-                      <div key={team.id} className="tm-row-wrap">
-                        <div
-                          className={`tm-row${expandedId === team.id ? ' expanded' : ''}`}
+              <div className="tm-standings-table-wrap">
+                <table className="tm-standings-table">
+                  <thead>
+                    <tr>
+                      <th className="tm-rank">#</th>
+                      <th className="tm-team-col">Team</th>
+                      <th className="tm-stat-col">W</th>
+                      <th className="tm-stat-col">L</th>
+                      <th className="tm-stat-col">PCT</th>
+                      <th className="tm-stat-col">GB</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(grouped[conf] || []).map((team, idx) => {
+                      const winPct = (team.wins / (team.wins + team.losses)).toFixed(3)
+                      return (
+                        <tr
+                          key={team.id}
+                          className={`tm-standings-row${expandedId === team.id ? ' expanded' : ''}`}
                           onClick={() => toggleTeam(team)}
                         >
-                          <TeamLogo abbr={team.abbreviation} size={36} />
-                          <div className="tm-row-info">
-                            <span className="tm-row-name">{team.full_name}</span>
-                            <span className="tm-row-city">{team.city}</span>
-                          </div>
-                          <span className="tm-row-abbr">{team.abbreviation}</span>
-                          <span className="tm-chevron">{expandedId === team.id ? '▲' : '▼'}</span>
-                        </div>
+                          <td className="tm-rank">{idx + 1}</td>
+                          <td className="tm-team-col">
+                            <div className="tm-team-info">
+                              <TeamLogo abbr={team.abbreviation} size={28} />
+                              <span className="tm-team-name">{team.abbreviation}</span>
+                              <span className="tm-team-city">{team.full_name}</span>
+                            </div>
+                          </td>
+                          <td className="tm-stat-col">{team.wins}</td>
+                          <td className="tm-stat-col">{team.losses}</td>
+                          <td className="tm-stat-col">{winPct}</td>
+                          <td className="tm-stat-col">{team.gamesBack.toFixed(1)}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-                        {expandedId === team.id && (
-                          <div className="tm-games-panel">
-                            {gamesLoading[team.id] && <div className="tm-games-loading">Loading recent games…</div>}
-                            {!gamesLoading[team.id] && (teamGames[team.id]||[]).length === 0 && (
-                              <div className="tm-games-empty">No recent games found.</div>
-                            )}
-                            <table className="tm-games-table">
-                              <tbody>
-                                {(teamGames[team.id]||[]).map(g => {
-                                  const isHome = g.home_team.id === team.id
-                                  const opp = isHome ? g.visitor_team : g.home_team
-                                  const teamScore = isHome ? g.home_team_score : g.visitor_team_score
-                                  const oppScore  = isHome ? g.visitor_team_score : g.home_team_score
-                                  const won = (teamScore||0) > (oppScore||0)
-                                  return (
-                                    <tr key={g.id} className="tm-game-row">
-                                      <td><span className={`tm-wl ${won?'win':'loss'}`}>{won?'W':'L'}</span></td>
-                                      <td className="tm-g-vs">{isHome?'vs':'@'}</td>
-                                      <td className="tm-g-opp">
-                                        <TeamLogo abbr={opp.abbreviation} size={22} />
-                                        <span>{opp.abbreviation}</span>
-                                      </td>
-                                      <td className="tm-g-score">{teamScore??'–'} – {oppScore??'–'}</td>
-                                      <td className="tm-g-date">{g.date?.split('T')[0]}</td>
-                                      <td className="tm-g-status">{g.status}</td>
-                                    </tr>
-                                  )
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+              {/* Games Panel */}
+              {expandedId && (grouped[conf] || []).find(t => t.id === expandedId) && (
+                <div className="tm-games-panel">
+                  {gamesLoading[expandedId] && <div className="tm-games-loading">Loading recent games…</div>}
+                  {!gamesLoading[expandedId] && (teamGames[expandedId]||[]).length === 0 && (
+                    <div className="tm-games-empty">No recent games found.</div>
+                  )}
+                  <table className="tm-games-table">
+                    <tbody>
+                      {(teamGames[expandedId]||[]).map(g => {
+                        const team = (grouped[conf] || []).find(t => t.id === expandedId)
+                        const isHome = g.home_team.id === team.id
+                        const opp = isHome ? g.visitor_team : g.home_team
+                        const teamScore = isHome ? g.home_team_score : g.visitor_team_score
+                        const oppScore  = isHome ? g.visitor_team_score : g.home_team_score
+                        const won = (teamScore||0) > (oppScore||0)
+                        return (
+                          <tr key={g.id} className="tm-game-row">
+                            <td><span className={`tm-wl ${won?'win':'loss'}`}>{won?'W':'L'}</span></td>
+                            <td className="tm-g-vs">{isHome?'vs':'@'}</td>
+                            <td className="tm-g-opp">
+                              <TeamLogo abbr={opp.abbreviation} size={22} />
+                              <span>{opp.abbreviation}</span>
+                            </td>
+                            <td className="tm-g-score">{teamScore??'–'} – {oppScore??'–'}</td>
+                            <td className="tm-g-date">{g.date?.split('T')[0]}</td>
+                            <td className="tm-g-status">{g.status}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Post Season View */}
+      {viewMode === 'postseason' && (
+        <div className="tm-view-placeholder">
+          <div className="tm-placeholder-content">
+            <h3>Post Season Information</h3>
+            <p>Post season standings and data coming soon…</p>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {/* Playoffs View */}
+      {viewMode === 'playoffs' && (
+        <div className="tm-view-placeholder">
+          <div className="tm-placeholder-content">
+            <h3>Playoffs Bracket</h3>
+            <p>NBA Playoffs bracket and results coming soon…</p>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }
