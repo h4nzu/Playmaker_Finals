@@ -99,42 +99,53 @@
 .tm-standings-table-wrap {
   width: 100%;
   overflow-x: auto;
+  margin-bottom: 20px;
 }
 
 .tm-standings-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 12px;
+  min-width: 1000px;
 }
 
 .tm-standings-table thead {
   background: rgba(77, 114, 240, 0.1);
   border-bottom: 2px solid rgba(77, 114, 240, 0.2);
+  position: sticky;
+  top: 0;
 }
 
 .tm-standings-table th {
-  padding: 12px 14px;
-  text-align: left;
+  padding: 12px 8px;
+  text-align: center;
   color: #a0a9ff;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-size: 11px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.tm-standings-table th.tm-team-col,
+.tm-standings-table td.tm-team-col {
+  text-align: left;
 }
 
 .tm-rank {
-  width: 40px;
+  width: 35px;
   text-align: center;
 }
 
 .tm-team-col {
+  min-width: 180px;
   flex: 1;
-  min-width: 200px;
 }
 
 .tm-stat-col {
   width: 60px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .tm-standings-row {
@@ -154,9 +165,11 @@
 }
 
 .tm-standings-row td {
-  padding: 14px;
+  padding: 12px 8px;
   color: #d0d7f0;
   vertical-align: middle;
+  text-align: center;
+  font-size: 12px;
 }
 
 .tm-standings-row .tm-rank {
@@ -167,21 +180,69 @@
 .tm-team-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+}
+
+.tm-team-names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tm-team-abbr {
+  font-weight: 700;
+  color: #fff;
+  font-size: 13px;
 }
 
 .tm-team-name {
-  font-weight: 700;
-  color: #fff;
-}
-
-.tm-team-city {
-  font-size: 12px;
+  font-size: 11px;
   color: #8899bb;
 }
 
 .tm-standings-row .tm-stat-col {
   font-weight: 600;
+  color: #a0a9ff;
+}
+
+.tm-stat-wins {
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.tm-stat-losses {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.tm-stat-pct {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.tm-stat-ppg {
+  color: #a0a9ff;
+}
+
+.tm-stat-opp {
+  color: #8899bb;
+}
+
+.tm-stat-diff .positive {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.tm-stat-diff .negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.tm-stat-streak {
+  font-weight: 600;
+}
+
+.tm-stat-l10 {
   color: #a0a9ff;
 }
 

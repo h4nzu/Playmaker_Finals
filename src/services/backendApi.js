@@ -82,17 +82,17 @@ export async function getTeamGames(teamId, perPage = 8) {
 }
 
 /**
- * All NBA teams
+ * Current NBA standings with detailed stats
  */
-export async function getTeams() {
+export async function getStandings() {
   try {
-    const data = await backendFetch('/teams')
+    const data = await backendFetch('/teams/standings/current')
     return {
       data: data.data || [],
       meta: { total: data.total || 0 },
     }
   } catch (err) {
-    throw new Error(`Failed to fetch teams: ${err.message}`)
+    throw new Error(`Failed to fetch standings: ${err.message}`)
   }
 }
 

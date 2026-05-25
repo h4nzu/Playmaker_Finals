@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
-import { getTeams, getTeamGames } from '../services/backendApi'
+import { getStandings, getTeamGames } from '../services/backendApi'
 import './Teams.css'
 
 const CONF_ORDER = ['East', 'West']
@@ -23,26 +23,18 @@ function TeamLogo({ abbr, size = 40 }) {
 }
 
 export default function Teams() {
-  const [teams, setTeams] = useState([])
+  const [standings, setStandings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [expandedId, setExpandedId] = useState(null)
   const [teamGames, setTeamGames] = useState({})
   const [gamesLoading, setGamesLoading] = useState({})
-  const [viewMode, setViewMode] = useState('standings') // standings, postseason, playoffs
+  const [viewMode, setViewMode] = useState('standings')
 
   useEffect(() => {
-    getTeams()
+    getStandings()
       .then(data => {
-        const teamsData = data.data || []
-        // Mock standings data - in a real app this would come from the API
-        const teamsWithStandings = teamsData.map(team => ({
-          ...team,
-          wins: Math.floor(Math.random() * 25) + 35,
-          losses: Math.floor(Math.random() * 25) + 25,
-          gamesBack: Math.random() * 15,
-        }))
-        setTeams(teamsWithStandings)
+        setStandings(data.data || [])
         setLoading(false)
       })
       .catch(err => {
@@ -52,32 +44,26 @@ export default function Teams() {
   }, [])
 
   function toggleTeam(team) {
-    if (expandedId === team.id) {
+    if (expandedId === team.team_id) {
       setExpandedId(null)
       return
     }
-    setExpandedId(team.id)
-    if (!teamGames[team.id]) {
-      setGamesLoading(prev => ({ ...prev, [team.id]: true }))
-      getTeamGames(team.id, 6)
+    setExpandedId(team.team_id)
+    if (!teamGames[team.team_id]) {
+      setGamesLoading(prev => ({ ...prev, [team.team_id]: true }))
+      getTeamGames(team.team_id, 6)
         .then(data => {
-          setTeamGames(prev => ({ ...prev, [team.id]: data.data || [] }))
-          setGamesLoading(prev => ({ ...prev, [team.id]: false }))
+          setTeamGames(prev => ({ ...prev, [team.team_id]: data.data || [] }))
+          setGamesLoading(prev => ({ ...prev, [team.team_id]: false }))
         })
-        .catch(() => setGamesLoading(prev => ({ ...prev, [team.id]: false })))
+        .catch(() => setGamesLoading(prev => ({ ...prev, [team.team_id]: false })))
     }
   }
 
-  // Sort teams by wins
-  const sortedTeams = [...teams].sort((a, b) => {
-    const aWinPct = a.wins / (a.wins + a.losses)
-    const bWinPct = b.wins / (b.wins + b.losses)
-    return bWinPct - aWinPct
-  })
-
   const grouped = CONF_ORDER.reduce((acc, conf) => {
-    acc[conf] = sortedTeams
+    acc[conf] = standings
       .filter(t => t.conference === conf)
+      .sort((a, b) => a.conf_rank - b.conf_rank)
     return acc
   }, {})
 
@@ -136,34 +122,56 @@ export default function Teams() {
                   <thead>
                     <tr>
                       <th className="tm-rank">#</th>
-                      <th className="tm-team-col">Team</th>
+                      <th className="tm-team-col">TEAM</th>
                       <th className="tm-stat-col">W</th>
                       <th className="tm-stat-col">L</th>
                       <th className="tm-stat-col">PCT</th>
-                      <th className="tm-stat-col">GB</th>
+                      <th className="tm-stat-col">HOME</th>
+                      <th className="tm-stat-col">AWAY</th>
+                      <th className="tm-stat-col">DIV</th>
+                      <th className="tm-stat-col">CONF</th>
+                      <th className="tm-stat-col">PPG</th>
+                      <th className="tm-stat-col">OPP PPG</th>
+                      <th className="tm-stat-col">DIFF</th>
+                      <th className="tm-stat-col">STRK</th>
+                      <th className="tm-stat-col">L10</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(grouped[conf] || []).map((team, idx) => {
-                      const winPct = (team.wins / (team.wins + team.losses)).toFixed(3)
+                      const winPct = (team.win_pct).toFixed(3)
                       return (
                         <tr
-                          key={team.id}
-                          className={`tm-standings-row${expandedId === team.id ? ' expanded' : ''}`}
+                          key={team.team_id}
+                          className={`tm-standings-row${expandedId === team.team_id ? ' expanded' : ''}`}
                           onClick={() => toggleTeam(team)}
                         >
                           <td className="tm-rank">{idx + 1}</td>
                           <td className="tm-team-col">
                             <div className="tm-team-info">
                               <TeamLogo abbr={team.abbreviation} size={28} />
-                              <span className="tm-team-name">{team.abbreviation}</span>
-                              <span className="tm-team-city">{team.full_name}</span>
+                              <div className="tm-team-names">
+                                <span className="tm-team-abbr">{team.abbreviation}</span>
+                                <span className="tm-team-name">{team.team_name}</span>
+                              </div>
                             </div>
                           </td>
-                          <td className="tm-stat-col">{team.wins}</td>
-                          <td className="tm-stat-col">{team.losses}</td>
-                          <td className="tm-stat-col">{winPct}</td>
-                          <td className="tm-stat-col">{team.gamesBack.toFixed(1)}</td>
+                          <td className="tm-stat-col tm-stat-wins">{team.wins}</td>
+                          <td className="tm-stat-col tm-stat-losses">{team.losses}</td>
+                          <td className="tm-stat-col tm-stat-pct">{winPct}</td>
+                          <td className="tm-stat-col">{team.home}</td>
+                          <td className="tm-stat-col">{team.road}</td>
+                          <td className="tm-stat-col">{team.div_record}</td>
+                          <td className="tm-stat-col">{team.conf_record}</td>
+                          <td className="tm-stat-col tm-stat-ppg">{team.ppg.toFixed(1)}</td>
+                          <td className="tm-stat-col tm-stat-opp">{team.opp_ppg.toFixed(1)}</td>
+                          <td className="tm-stat-col tm-stat-diff">
+                            <span className={team.diff_ppg > 0 ? 'positive' : 'negative'}>
+                              {team.diff_ppg > 0 ? '+' : ''}{team.diff_ppg.toFixed(1)}
+                            </span>
+                          </td>
+                          <td className="tm-stat-col tm-stat-streak">{team.current_streak}</td>
+                          <td className="tm-stat-col tm-stat-l10">{team.last_10}</td>
                         </tr>
                       )
                     })}
@@ -172,7 +180,7 @@ export default function Teams() {
               </div>
 
               {/* Games Panel */}
-              {expandedId && (grouped[conf] || []).find(t => t.id === expandedId) && (
+              {expandedId && (grouped[conf] || []).find(t => t.team_id === expandedId) && (
                 <div className="tm-games-panel">
                   {gamesLoading[expandedId] && <div className="tm-games-loading">Loading recent games…</div>}
                   {!gamesLoading[expandedId] && (teamGames[expandedId]||[]).length === 0 && (
@@ -181,8 +189,8 @@ export default function Teams() {
                   <table className="tm-games-table">
                     <tbody>
                       {(teamGames[expandedId]||[]).map(g => {
-                        const team = (grouped[conf] || []).find(t => t.id === expandedId)
-                        const isHome = g.home_team.id === team.id
+                        const team = (grouped[conf] || []).find(t => t.team_id === expandedId)
+                        const isHome = g.home_team.id === team.team_id
                         const opp = isHome ? g.visitor_team : g.home_team
                         const teamScore = isHome ? g.home_team_score : g.visitor_team_score
                         const oppScore  = isHome ? g.visitor_team_score : g.home_team_score

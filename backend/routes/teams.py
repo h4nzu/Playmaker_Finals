@@ -54,6 +54,40 @@ TEAM_DATA = {
     30: {"abbreviation": "WAS", "name": "Wizards", "city": "Washington", "conference": "East", "division": "Southeast"},
 }
 
+# Map NBA team IDs to local TEAM_DATA keys
+NBA_ID_TO_TEAM_NUM = {
+    1610612737: 1,   # ATL
+    1610612738: 2,   # BOS
+    1610612739: 6,   # CLE
+    1610612740: 19,  # NOP
+    1610612741: 5,   # CHI
+    1610612742: 7,   # DAL
+    1610612743: 8,   # DEN
+    1610612744: 10,  # GSW
+    1610612745: 11,  # HOU
+    1610612746: 13,  # LAC
+    1610612747: 14,  # LAL
+    1610612748: 16,  # MIA
+    1610612749: 17,  # MIL
+    1610612750: 18,  # MIN
+    1610612751: 3,   # BKN
+    1610612752: 20,  # NYK
+    1610612753: 22,  # ORL
+    1610612754: 12,  # IND
+    1610612755: 23,  # PHI
+    1610612756: 24,  # PHX
+    1610612757: 25,  # POR
+    1610612758: 26,  # SAC
+    1610612759: 27,  # SAS
+    1610612760: 21,  # OKC
+    1610612761: 28,  # TOR
+    1610612762: 29,  # UTA
+    1610612763: 15,  # MEM
+    1610612764: 30,  # WAS
+    1610612765: 9,   # DET
+    1610612766: 4,   # CHA
+}
+
 
 def get_team_logo_url(team_id: int) -> str:
     """Get NBA team logo URL from CDN"""
@@ -154,3 +188,69 @@ async def get_team_details(team_id: int):
     cache_manager.set(endpoint, team, CACHE_TTL["teams"])
     
     return team
+
+
+@router.get("/standings/current")
+async def get_current_standings():
+    """Get current NBA standings with detailed stats"""
+    endpoint = "standings:current"
+    
+    # Check cache
+    cached = cache_manager.get(endpoint)
+    if cached:
+        log_cache_hit(endpoint, True)
+        return {"data": cached, "total": len(cached)}
+    
+    log_cache_hit(endpoint, False)
+    
+    try:
+        from nba_api.stats.endpoints import leaguestandings
+        
+        # Fetch current season standings
+        standings_data = leaguestandings.LeagueStandings(season='2025').get_data_frames()
+        if not standings_data:
+            raise APIError("No standings data available")
+        
+        df = standings_data[0]
+        
+        # Format standings data
+        standings_list = []
+        for _, row in df.iterrows():
+            team_id = int(row.get("TeamID", 0))
+            team_num = NBA_ID_TO_TEAM_NUM.get(team_id, 0)
+            team_data = TEAM_DATA.get(team_num, {})
+            
+            standings_list.append({
+                "team_id": team_id,
+                "team_name": f"{row.get('TeamCity', '')} {row.get('TeamName', '')}".strip(),
+                "abbreviation": team_data.get("abbreviation", "N/A"),
+                "conference": row.get("Conference", ""),
+                "division": row.get("Division", ""),
+                "wins": int(row.get("WINS", 0)),
+                "losses": int(row.get("LOSSES", 0)),
+                "win_pct": float(row.get("WinPCT", 0)),
+                "conf_record": str(row.get("ConferenceRecord", "-")),
+                "div_record": str(row.get("DivisionRecord", "-")),
+                "home": str(row.get("HOME", "-")),
+                "road": str(row.get("ROAD", "-")),
+                "ppg": float(row.get("PointsPG", 0)),
+                "opp_ppg": float(row.get("OppPointsPG", 0)),
+                "diff_ppg": float(row.get("DiffPointsPG", 0)),
+                "current_streak": str(row.get("strCurrentStreak", "-")),
+                "last_10": str(row.get("L10", "-")),
+                "div_rank": int(row.get("DivisionRank", 0)),
+                "conf_rank": int(row.get("PlayoffRank", 0)),
+            })
+        
+        # Cache the standings
+        cache_manager.set(endpoint, standings_list, CACHE_TTL["teams"])
+        
+        return {"data": standings_list, "total": len(standings_list)}
+    
+    except RateLimitError:
+        raise
+    except APIError:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching standings: {str(e)}")
+        raise APIError(f"Failed to fetch standings: {str(e)}")
