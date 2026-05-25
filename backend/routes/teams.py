@@ -83,7 +83,11 @@ async def fetch_teams_from_api():
         teams_data = teams.get_teams()
         formatted = []
         for team in teams_data:
-            formatted.append(format_team(team["id"]))
+            # Extract team number from NBA team ID: 1610612737 -> 1, 1610612738 -> 2, etc.
+            team_id = team["id"]
+            team_num = team_id - 1610612736  # Convert full ID to team number (1-30)
+            if 1 <= team_num <= 30:
+                formatted.append(format_team(team_num))
         
         return formatted
     except RateLimitError:
