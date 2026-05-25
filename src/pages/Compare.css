@@ -335,3 +335,11 @@
 
 .compare-diff-a { background: #f0ebff !important; color: #6040c0; font-weight: 700; }
 .compare-diff-b { background: #fff5e8 !important; color: #b05000; font-weight: 700; }
+
+/* ── Stats Section ────────────────────────────── */
+.compare-stats-header { background: #f5f0ff !important; border-top: 2px solid #e0e0e8; }
+.compare-stats-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: #7b44e0;
+  padding: 12px 20px !important; text-align: left;
+}

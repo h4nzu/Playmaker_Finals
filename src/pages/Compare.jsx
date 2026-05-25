@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
-import { searchPlayers } from '../services/backendApi'
+import { searchPlayers, getPlayerStats } from '../services/backendApi'
 import './Compare.css'
 
 function playerAvatarUrl(player, size = 128) {
@@ -113,9 +113,51 @@ const FIELDS = [
   { key: 'draft_number',   label: 'Draft Pick' },
 ]
 
+const STAT_FIELDS = [
+  { key: 'PTS',  label: 'Points Per Game',    suffix: ' PPG' },
+  { key: 'AST',  label: 'Assists Per Game',   suffix: ' APG' },
+  { key: 'REB',  label: 'Rebounds Per Game',  suffix: ' RPG' },
+  { key: 'STL',  label: 'Steals Per Game',    suffix: ' SPG' },
+  { key: 'BLK',  label: 'Blocks Per Game',    suffix: ' BPG' },
+]
+
 export default function Compare() {
   const [playerA, setPlayerA] = useState(null)
   const [playerB, setPlayerB] = useState(null)
+  const [statsA, setStatsA] = useState(null)
+  const [statsB, setStatsB] = useState(null)
+  const [loadingStats, setLoadingStats] = useState(false)
+
+  // Fetch stats when players are selected
+  useEffect(() => {
+    if (playerA && playerA.id) {
+      setLoadingStats(true)
+      getPlayerStats(playerA.id)
+        .then(stats => setStatsA(stats))
+        .catch(err => {
+          console.error('Failed to fetch player A stats:', err)
+          setStatsA(null)
+        })
+        .finally(() => setLoadingStats(false))
+    } else {
+      setStatsA(null)
+    }
+  }, [playerA])
+
+  useEffect(() => {
+    if (playerB && playerB.id) {
+      setLoadingStats(true)
+      getPlayerStats(playerB.id)
+        .then(stats => setStatsB(stats))
+        .catch(err => {
+          console.error('Failed to fetch player B stats:', err)
+          setStatsB(null)
+        })
+        .finally(() => setLoadingStats(false))
+    } else {
+      setStatsB(null)
+    }
+  }, [playerB])
 
   const showTable = playerA && playerB
 
@@ -189,6 +231,35 @@ export default function Compare() {
                   </tr>
                 )
               })}
+
+              {/* Stats Section */}
+              {(statsA || statsB) && (
+                <>
+                  <tr className="compare-tr compare-stats-header">
+                    <td colSpan="3" className="compare-stats-title">2025-26 SEASON STATS</td>
+                  </tr>
+                  {STAT_FIELDS.map(f => {
+                    const valA = statsA ? statsA[f.key] : null
+                    const valB = statsB ? statsB[f.key] : null
+                    const numA = valA !== null && valA !== undefined ? parseFloat(valA) : null
+                    const numB = valB !== null && valB !== undefined ? parseFloat(valB) : null
+                    const higherA = numA !== null && numB !== null && numA > numB
+                    const higherB = numA !== null && numB !== null && numB > numA
+                    
+                    return (
+                      <tr key={f.key} className="compare-tr">
+                        <td className="compare-td-label">{f.label}</td>
+                        <td className={`compare-td${higherA ? ' compare-diff-a' : ''}`}>
+                          {numA !== null ? `${numA.toFixed(1)}${f.suffix || ''}` : '—'}
+                        </td>
+                        <td className={`compare-td${higherB ? ' compare-diff-b' : ''}`}>
+                          {numB !== null ? `${numB.toFixed(1)}${f.suffix || ''}` : '—'}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </>
+              )}
             </tbody>
           </table>
         </div>
