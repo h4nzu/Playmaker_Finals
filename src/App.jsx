@@ -7,6 +7,7 @@ import PlayerProfile from './pages/PlayerProfile.jsx'
 import Teams     from './pages/Teams.jsx'
 import Schedule  from './pages/Schedule.jsx'
 import Compare   from './pages/Compare.jsx'
+import About     from './pages/About.jsx'
 import './App.css'
 
 const LOGO_URL = 'https://res.cloudinary.com/dv3eeuy4b/image/upload/v1778557328/LOGO_umlvbk.png'
@@ -25,8 +26,8 @@ function Home() {
       <nav className="navbar">
         <div className="nav-brand">Playmaker</div>
         <ul className="nav-links">
-          <li className="active"><a href="#">Home</a></li>
-          <li><a href="#">About Us</a></li>
+          <li className="active"><a href="/">Home</a></li>
+          <li><a href="/about">About Us</a></li>
           <li><a href="#">Contact</a></li>
         </ul>
       </nav>
@@ -86,6 +87,7 @@ function App() {
     <RouteTransition>
     <Routes>
       <Route path="/"          element={<Home />} />
+      <Route path="/about"     element={<About />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/players"   element={<Players />} />
       <Route path="/players/:playerId" element={<PlayerProfile />} />

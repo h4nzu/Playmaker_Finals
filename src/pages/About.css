@@ -1,0 +1,193 @@
+/* ── Page Header ──────────────────────────────── */
+.about-page { min-height: 100vh; background: linear-gradient(135deg, #0a0e1a 0%, #0f1428 100%); }
+
+.about-header { padding: 24px 32px 0; }
+
+.about-breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.about-bc-root { color: #1d42ba; cursor: pointer; }
+.about-bc-root:hover { text-decoration: underline; }
+.about-bc-sep { color: #555d7a; }
+.about-bc-cur { color: #8899bb; }
+
+.about-title-section { margin-bottom: 32px; }
+.about-title { font-size: 26px; font-weight: 900; letter-spacing: 0.04em; color: #fff; margin: 0 0 8px; }
+.about-subtitle { font-size: 14px; color: #8899bb; margin: 0; font-weight: 500; }
+
+/* ── Description ──────────────────────────────── */
+.about-description {
+  margin: 0 32px 48px;
+  background: rgba(29, 66, 186, 0.08);
+  border: 1px solid rgba(29, 66, 186, 0.2);
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 900px;
+}
+.about-description p {
+  color: #c8d4e8;
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 0 0 12px;
+}
+.about-description p:last-child { margin-bottom: 0; }
+
+/* ── Team Section ──────────────────────────────── */
+.about-team-section { margin: 0 32px 48px; }
+
+.about-team-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0 0 28px;
+  border-bottom: 2px solid #1d42ba;
+  padding-bottom: 12px;
+}
+
+.about-developers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* ── Developer Card ────────────────────────────── */
+.about-dev-card {
+  background: linear-gradient(135deg, rgba(29, 66, 186, 0.1), rgba(29, 66, 186, 0.05));
+  border: 1px solid rgba(29, 66, 186, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+.about-dev-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(29, 66, 186, 0.4);
+  box-shadow: 0 12px 32px rgba(29, 66, 186, 0.2);
+  background: linear-gradient(135deg, rgba(29, 66, 186, 0.15), rgba(29, 66, 186, 0.08));
+}
+
+.about-dev-image-wrapper {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 18px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 3px solid #1d42ba;
+  box-shadow: 0 0 20px rgba(29, 66, 186, 0.3);
+  background: #0a0e1a;
+}
+.about-dev-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.about-dev-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #e0e8ff;
+  margin: 0 0 4px;
+  letter-spacing: 0.02em;
+}
+
+.about-dev-role {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1d42ba;
+  margin: 0 0 16px;
+}
+
+.about-dev-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid rgba(29, 66, 186, 0.2);
+  padding-top: 14px;
+}
+
+.about-dev-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.about-detail-label {
+  font-weight: 700;
+  color: #556080;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.about-detail-value {
+  color: #8899bb;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+}
+
+/* ── Tech Stack Section ────────────────────────── */
+.about-tech-section { margin: 0 32px 48px; }
+
+.about-tech-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0 0 28px;
+  border-bottom: 2px solid #1d42ba;
+  padding-bottom: 12px;
+}
+
+.about-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.about-tech-card {
+  background: rgba(29, 66, 186, 0.08);
+  border: 1px solid rgba(29, 66, 186, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.about-tech-card h4 {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1d42ba;
+  margin: 0 0 14px;
+}
+
+.about-tech-card p {
+  font-size: 12px;
+  color: #8899bb;
+  margin: 0 0 6px;
+  line-height: 1.6;
+}
+.about-tech-card p:last-child { margin-bottom: 0; }
+
+/* ── Responsive ────────────────────────────────── */
+@media (max-width: 768px) {
+  .about-header { padding: 16px 20px 0; }
+  .about-description { margin: 0 20px 32px; padding: 16px; }
+  .about-team-section,
+  .about-tech-section { margin: 0 20px 32px; }
+  .about-developers-grid { grid-template-columns: 1fr; }
+  .about-dev-card { padding: 16px; }
+  .about-dev-image-wrapper { width: 120px; height: 120px; }
+}
