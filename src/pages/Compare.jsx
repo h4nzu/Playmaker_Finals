@@ -222,10 +222,10 @@ export default function Compare() {
                 return (
                   <tr key={f.key} className="compare-tr">
                     <td className="compare-td-label">{f.label}</td>
-                    <td className={`compare-td${!same && valA ? ' compare-diff-a' : ''}`}>
+                    <td className="compare-td">
                       {valA ? `${f.prefix || ''}${valA}${f.suffix || ''}` : '—'}
                     </td>
-                    <td className={`compare-td${!same && valB ? ' compare-diff-b' : ''}`}>
+                    <td className="compare-td">
                       {valB ? `${f.prefix || ''}${valB}${f.suffix || ''}` : '—'}
                     </td>
                   </tr>
