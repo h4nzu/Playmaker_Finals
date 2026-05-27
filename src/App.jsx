@@ -7,6 +7,7 @@ import PlayerProfile from './pages/PlayerProfile.jsx'
 import Teams     from './pages/Teams.jsx'
 import Schedule  from './pages/Schedule.jsx'
 import Compare   from './pages/Compare.jsx'
+import Login from './pages/Login.jsx'
 import About     from './pages/About.jsx'
 import './App.css'
 
@@ -18,29 +19,8 @@ function Home() {
 
   function handleTitleClick() {
     setLaunching(true)
-    setTimeout(() => navigate('/dashboard'), 900)
+    setTimeout(() => navigate('/login'), 900)
   }
-
-  const fetchNews = () => {
-    setNewsLoading(true)
-    setNewsError(null)
-
-    getNews(6)
-      .then(data => {
-        const items = data?.articles || data?.items || data?.news || data?.data || data
-        const list = Array.isArray(items) ? items : []
-        setNews(list.slice(0, 5))
-        setNewsLoading(false)
-      })
-      .catch(err => {
-        setNewsError(err.message)
-        setNewsLoading(false)
-      })
-  }
-
-  useEffect(() => {
-    fetchNews()
-  }, [])
 
   return (
     <>
@@ -116,6 +96,7 @@ function App() {
       <Route path="/teams"     element={<Teams />} />
       <Route path="/schedule"  element={<Schedule />} />
       <Route path="/compare"   element={<Compare />} />
+      <Route path="/login" element={<Login />} />
     </Routes>
     </RouteTransition>
   )
