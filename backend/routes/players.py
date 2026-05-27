@@ -310,7 +310,7 @@ async def get_players(
 
 @router.get("/{player_id}/stats")
 async def get_player_stats(player_id: str):
-    """Get individual player stats (cached for 1 hour)"""
+    """Get individual player season stats with per-game averages"""
     endpoint = f"players:stats:{player_id}"
     
     # Check cache
@@ -326,16 +326,40 @@ async def get_player_stats(player_id: str):
         
         # Convert player_id to int for API
         player_id_int = int(player_id)
-        career = PlayerCareerStats(player_id=player_id_int)
         
-        # Get season totals
-        season_stats = career.get_data_frames()[0]
-        
-        if season_stats.empty:
-            raise HTTPException(status_code=404, detail="Player stats not found")
-        
-        # Format stats
-        stats_dict = season_stats.to_dict('records')[0]
+        try:
+            # Get career stats
+            career = PlayerCareerStats(player_id=player_id_int)
+            season_stats = career.get_data_frames()[0]
+            
+            if season_stats.empty:
+                raise HTTPException(status_code=404, detail="Player stats not found")
+            
+            # Get the most recent season (last row)
+            latest = season_stats.iloc[-1]
+            
+            # Convert totals to per-game stats
+            gp = float(latest.get("GP", 1)) or 1
+            
+            stats_dict = {
+                "PLAYER_ID": player_id,
+                # Per-game stats
+                "PTS": float(latest.get("PTS", 0)) / gp if gp > 0 else 0,
+                "REB": float(latest.get("REB", 0)) / gp if gp > 0 else 0,
+                "AST": float(latest.get("AST", 0)) / gp if gp > 0 else 0,
+                "STL": float(latest.get("STL", 0)) / gp if gp > 0 else 0,
+                "BLK": float(latest.get("BLK", 0)) / gp if gp > 0 else 0,
+                "FG_PCT": float(latest.get("FG_PCT", 0)) * 100 if latest.get("FG_PCT") else 0,  # Convert to 0-100
+                "FT_PCT": float(latest.get("FT_PCT", 0)) * 100 if latest.get("FT_PCT") else 0,
+                "FG3_PCT": float(latest.get("FG3_PCT", 0)) * 100 if latest.get("FG3_PCT") else 0,
+                "MIN": float(latest.get("MIN", 0)) / gp if gp > 0 else 0,
+                "GP": gp,
+                "SEASON_ID": str(latest.get("SEASON_ID", "")),
+            }
+            
+        except Exception as inner_e:
+            logger.error(f"Error processing career stats: {str(inner_e)}")
+            raise
         
         cache_manager.set(endpoint, stats_dict, CACHE_TTL["player_stats"])
         stale_cache[endpoint] = stats_dict
@@ -350,7 +374,9 @@ async def get_player_stats(player_id: str):
             return stale_cache[endpoint]
         
         raise HTTPException(status_code=503, detail=f"Service unavailable: {str(e)}")
-    except ValueError:
+    except ValueError as ve:
+        logger.error(f"Value error: {str(ve)}")
         raise HTTPException(status_code=400, detail="Invalid player ID")
     except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching stats: {str(e)}")

@@ -223,7 +223,7 @@ export async function getTransactions(limit = 20) {
  * @param {number} [limit=10] - Max number of articles
  */
 export async function getNews(limit = 10) {
-  return espnFetch(`${BASE_V2}/news?limit=${limit}`)
+  return espnFetch(`${SITE_API}/news?limit=${limit}`)
 }
 
 // ────────────────────────────────────────────────────────────────────────────────

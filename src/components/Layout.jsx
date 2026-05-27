@@ -85,6 +85,9 @@ export default function Layout({ children }) {
           <NavLink to="/compare" className={({ isActive }) => `layout-nav-item${isActive ? ' active' : ''}`}>
             <span className="layout-nav-icon">⇄</span> Compare
           </NavLink>
+          <NavLink to="/about" className={({ isActive }) => `layout-nav-item${isActive ? ' active' : ''}`}>
+            <span className="layout-nav-icon">ℹ️</span> About Us
+          </NavLink>
         </nav>
       </aside>
 
