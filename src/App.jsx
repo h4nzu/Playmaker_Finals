@@ -21,6 +21,27 @@ function Home() {
     setTimeout(() => navigate('/dashboard'), 900)
   }
 
+  const fetchNews = () => {
+    setNewsLoading(true)
+    setNewsError(null)
+
+    getNews(6)
+      .then(data => {
+        const items = data?.articles || data?.items || data?.news || data?.data || data
+        const list = Array.isArray(items) ? items : []
+        setNews(list.slice(0, 5))
+        setNewsLoading(false)
+      })
+      .catch(err => {
+        setNewsError(err.message)
+        setNewsLoading(false)
+      })
+  }
+
+  useEffect(() => {
+    fetchNews()
+  }, [])
+
   return (
     <>
       <nav className="navbar">
@@ -56,6 +77,7 @@ function Home() {
         </div>
         <div className="site-url">www.playmaker.com</div>
       </main>
+
     </>
   )
 }

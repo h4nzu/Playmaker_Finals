@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
 import { getRecentGames } from '../services/backendApi'
+import { getNews } from '../services/espnApi'
 import './Dashboard.css'
 
 // Map NBA team abbreviations → NBA CDN team IDs for logo URLs
@@ -30,6 +31,9 @@ function Dashboard() {
   const [games, setGames] = useState([])
   const [gamesLoading, setGamesLoading] = useState(true)
   const [gamesError, setGamesError] = useState(null)
+  const [news, setNews] = useState([])
+  const [newsLoading, setNewsLoading] = useState(true)
+  const [newsError, setNewsError] = useState(null)
 
   const fetchGames = () => {
     setGamesLoading(true)
@@ -45,7 +49,39 @@ function Dashboard() {
       })
   }
 
-  useEffect(() => { fetchGames() }, [])
+  const fetchNews = () => {
+    setNewsLoading(true)
+    setNewsError(null)
+    getNews(9)
+      .then(data => {
+        const items = data?.articles || data?.items || data?.news || data?.data || data
+        setNews(Array.isArray(items) ? items.slice(0, 8) : [])
+        setNewsLoading(false)
+      })
+      .catch(err => {
+        setNewsError(err.message)
+        setNewsLoading(false)
+      })
+  }
+
+  useEffect(() => {
+    fetchGames()
+    fetchNews()
+  }, [])
+
+  function extractArticleImage(item) {
+    if (!item) return null
+    // common shapes: item.images -> [{ url }], item.images -> [{ href }], item.thumbnail.href
+    const imgs = item.images || []
+    if (Array.isArray(imgs) && imgs.length > 0) {
+      const first = imgs[0]
+      if (!first) return null
+      return first.url || first.href || first.src || (first.resolutions && first.resolutions[0] && first.resolutions[0].url) || null
+    }
+    if (item.thumbnail && (item.thumbnail.href || item.thumbnail.url)) return item.thumbnail.href || item.thumbnail.url
+    if (item.image && (item.image.url || item.image.href)) return item.image.url || item.image.href
+    return null
+  }
 
   // Top scoring teams derived from games
   const topTeams = (() => {
@@ -220,6 +256,54 @@ function Dashboard() {
           )}
         </section>
       </div>
+
+      <section className="db-news-section">
+        <div className="db-section-header">
+          <h2 className="db-section-title">NBA NEWS</h2>
+          <span className="db-section-sub">Top headlines</span>
+        </div>
+
+        {newsLoading && (
+          <div className="db-news-grid">
+            {[...Array(3)].map((_, i) => <div key={i} className="db-news-skeleton" />)}
+          </div>
+        )}
+
+        {newsError && !newsLoading && (
+          <div className="db-error-msg">{newsError}</div>
+        )}
+
+        {!newsLoading && !newsError && news.length === 0 && (
+          <div className="db-empty-msg">No news available right now.</div>
+        )}
+
+        {!newsLoading && !newsError && news.length > 0 && (
+          <div className="db-news-grid">
+            {news.map((item, index) => {
+              const title = item?.headline || item?.title || item?.name || 'Untitled news'
+              const summary = item?.summary || item?.description || item?.abstract || ''
+              const source = item?.source?.name || item?.source || item?.provider?.name || item?.site || 'ESPN'
+              const published = item?.published || item?.publishedAt || item?.datePublished || item?.displayDate || ''
+              const link = item?.links?.web?.href || item?.href || item?.url || item?.webUrl || '#'
+              const imageUrl = extractArticleImage(item)
+              const isFeatured = index === 0
+              return (
+                <a key={index} className={`db-news-card${isFeatured ? ' db-news-card--featured' : ''}`} href={link} target="_blank" rel="noreferrer">
+                  {imageUrl && (
+                    <div className={`db-news-thumb${isFeatured ? ' db-news-thumb--featured' : ''}`} style={{ backgroundImage: `url(${imageUrl})` }} role="img" aria-label={title} />
+                  )}
+                  <div className="db-news-meta">
+                    <span>{source}</span>
+                    {published && <span>{new Date(published).toLocaleDateString()}</span>}
+                  </div>
+                  <h3>{title}</h3>
+                  {summary && <p>{summary}</p>}
+                </a>
+              )
+            })}
+          </div>
+        )}
+      </section>
     </Layout>
   )
 }
