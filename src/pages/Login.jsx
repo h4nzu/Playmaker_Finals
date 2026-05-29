@@ -35,23 +35,30 @@ async function handleSubmit(e) {
     // Register user
     try {
       setLoading(true)
+      const payload = {
+        name: form.name,
+        email: form.email,
+        password: form.password
+      }
+      console.log("[v0] Registration payload:", payload)
+      
       const response = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          password: form.password
-        })
+        body: JSON.stringify(payload)
       })
+      
+      console.log("[v0] Registration response status:", response.status)
       
       if (!response.ok) {
         const data = await response.json()
+        console.log("[v0] Registration error data:", data)
         setError(data.detail || 'Registration failed')
         return
       }
       
       // Successfully registered - show success and auto-switch to login mode
+      console.log("[v0] Registration successful, switching to login mode")
       setForm({ name: '', email: '', password: '', confirm: '' })
       setError('')
       setSuccess('Account created successfully! You can now log in with your credentials.')
