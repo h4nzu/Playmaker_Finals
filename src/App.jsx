@@ -16,7 +16,7 @@ import AdminDashboard from './components/AdminDashboard.jsx'
 import './App.css'
 
 const LOGO_URL = 'https://res.cloudinary.com/dv3eeuy4b/image/upload/v1778557328/LOGO_umlvbk.png'
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 function Home() {
   const navigate = useNavigate()
