@@ -30,5 +30,21 @@
     "password": "$argon2id$v=19$m=65536,t=3,p=4$FKI0xhhD6B3j/F9LCeF87w$GKy+BCPWFUHGYiMXgOCuapIdw5nKvK4OPnHJHiqdl14",
     "created_at": "2026-05-29T06:22:55.674027Z",
     "updated_at": "2026-05-29T06:22:55.674085Z"
+  },
+  {
+    "id": 1780036959010,
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$1TqndE4pxVjrfc9Z630vBQ$TFjcumT24obegdsQPQqnS9B0Rj8N1/Q/kpa4oeX0MPI",
+    "created_at": "2026-05-29T06:42:39.075443Z",
+    "updated_at": "2026-05-29T06:42:39.075488Z"
+  },
+  {
+    "id": 1780037026904,
+    "name": "Michael Johnson",
+    "email": "michael@test.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$e0+JkXLuvbd2DsE4pzQGwA$h5drS9uM69k2VtAcOHWhT3Nmuw2+MHytBwKlA77R7rI",
+    "created_at": "2026-05-29T06:43:47.026043Z",
+    "updated_at": "2026-05-29T06:43:47.026073Z"
   }
 ]
