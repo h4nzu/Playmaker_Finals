@@ -21,6 +21,16 @@ export default function AdminDashboard() {
     }
   }, [activeTab])
 
+  React.useEffect(() => {
+    // Auto-refresh users tab every 3 seconds while viewing users
+    if (activeTab === 'users') {
+      const interval = setInterval(() => {
+        fetchUsers()
+      }, 3000)
+      return () => clearInterval(interval)
+    }
+  }, [activeTab])
+
   async function fetchMessages() {
     try {
       setLoading(true)
@@ -243,6 +253,13 @@ export default function AdminDashboard() {
         <>
           <div className="admin-stats">
             <span className="stat">Total Users: {users.length}</span>
+            <button 
+              className="filter-btn"
+              onClick={() => fetchUsers()}
+              style={{ marginLeft: 'auto' }}
+            >
+              🔄 Refresh
+            </button>
           </div>
 
           <div className="admin-content">

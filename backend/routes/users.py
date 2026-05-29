@@ -163,3 +163,40 @@ async def get_user(email: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch user"
         )
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_200_OK)
+async def delete_user(user_id: int):
+    """
+    Delete a user by ID (admin only)
+    """
+
+    try:
+        success = user_storage.delete_user(user_id)
+
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        logger.info(f"User {user_id} deleted")
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "User deleted successfully"
+            }
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error(f"Error deleting user: {e}")
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete user"
+        )
