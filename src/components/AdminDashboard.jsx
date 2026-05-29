@@ -2,7 +2,7 @@ import { useAdminAuth } from '../context/AdminAuthContext.jsx'
 import './AdminDashboard.css'
 import React from 'react'
 
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api'
 
 export default function AdminDashboard() {
   const { admin, logout } = useAdminAuth()
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
   async function fetchMessages() {
     try {
       setLoading(true)
-      const response = await fetch(`${API_BASE_URL}/api/contact/messages`)
+      const response = await fetch(`${API_BASE_URL}/contact/messages`)
       const data = await response.json()
       setMessages(data.data || [])
     } catch (error) {
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
   async function fetchUsers() {
     try {
       setLoading(true)
-      const response = await fetch(`${API_BASE_URL}/api/users/all`)
+      const response = await fetch(`${API_BASE_URL}/users/all`)
       const data = await response.json()
       setUsers(data.data || [])
     } catch (error) {
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
 
   async function markMessageAsRead(id) {
     try {
-      await fetch(`${API_BASE_URL}/api/contact/messages/${id}/read`, {
+      await fetch(`${API_BASE_URL}/contact/messages/${id}/read`, {
         method: 'PATCH'
       })
       fetchMessages()
@@ -71,7 +71,7 @@ export default function AdminDashboard() {
   async function deleteMessage(id) {
     if (window.confirm('Are you sure you want to delete this message?')) {
       try {
-        await fetch(`${API_BASE_URL}/api/contact/messages/${id}`, {
+        await fetch(`${API_BASE_URL}/contact/messages/${id}`, {
           method: 'DELETE'
         })
         fetchMessages()
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
   async function deleteUser(id) {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await fetch(`${API_BASE_URL}/api/users/${id}`, {
+        await fetch(`${API_BASE_URL}/users/${id}`, {
           method: 'DELETE'
         })
         fetchUsers()
