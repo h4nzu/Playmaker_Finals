@@ -22,5 +22,13 @@
     "password": "$argon2id$v=19$m=65536,t=3,p=4$4BxjbG1tDSHkfA+h9L4Xog$0xjtna8lB3AE7sSQpI1+t/K80wBFGVkBEnrTzhDMQIU",
     "created_at": "2026-05-29T06:00:09.684856Z",
     "updated_at": "2026-05-29T06:00:09.684881Z"
+  },
+  {
+    "id": 1780035775530,
+    "name": "Bob Wilson",
+    "email": "bob@test.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$FKI0xhhD6B3j/F9LCeF87w$GKy+BCPWFUHGYiMXgOCuapIdw5nKvK4OPnHJHiqdl14",
+    "created_at": "2026-05-29T06:22:55.674027Z",
+    "updated_at": "2026-05-29T06:22:55.674085Z"
   }
 ]
