@@ -43,26 +43,30 @@ async function handleSubmit(e) {
         })
       })
       
+      const data = await response.json()
+      
       if (!response.ok) {
-        const data = await response.json()
         setError(data.detail || 'Registration failed')
+        setLoading(false)
         return
       }
       
       // Successfully registered
-      alert('Account created successfully!')
-
-      // Switch back to login mode
-      setMode('login')
-
-      // Clear form fields
-      setForm({ name: '', email: '', password: '', confirm: '' })
       setError('')
+      alert('Account created successfully! Redirecting to login...')
+      
+      // Reset form
+      setForm({ name: '', email: '', password: '', confirm: '' })
+      
+      // Wait a moment then switch to login mode
+      setTimeout(() => {
+        setMode('login')
+        setLoading(false)
+      }, 500)
       
     } catch (err) {
       setError('Network error. Please try again.')
       console.error(err)
-    } finally {
       setLoading(false)
     }
   } else {
@@ -87,16 +91,19 @@ async function handleSubmit(e) {
 
       if (!response.ok) {
         setError(data.detail || 'Login failed')
+        setLoading(false)
         return
       }
 
+      // Store user session
+      localStorage.setItem('user', JSON.stringify(data))
+      
       // Successfully logged in, navigate to dashboard
       navigate('/dashboard')
       
     } catch (err) {
       setError('Network error. Please try again.')
       console.error(err)
-    } finally {
       setLoading(false)
     }
   }
