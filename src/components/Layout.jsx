@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { searchPlayers } from '../services/backendApi'
+import ProfileCard from './ProfileCard'
 import './Layout.css'
 
 const LOGO_URL = 'https://res.cloudinary.com/dv3eeuy4b/image/upload/v1778557328/LOGO_umlvbk.png'
@@ -23,6 +24,7 @@ export default function Layout({ children }) {
   const [players, setPlayers] = useState([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [user, setUser] = useState(null)
   const dropdownRef = useRef(null)
 
   // Debounced global player search
@@ -44,8 +46,6 @@ export default function Layout({ children }) {
     }, 500)
     return () => clearTimeout(timer)
   }, [searchQuery])
-
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -54,6 +54,18 @@ export default function Layout({ children }) {
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  // Load user from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser))
+      } catch (e) {
+        console.error('Failed to parse user data:', e)
+      }
+    }
   }, [])
 
   function handlePlayerClick(player) {
@@ -134,7 +146,7 @@ export default function Layout({ children }) {
             )}
           </div>
           <div className="layout-user">
-            <div className="layout-avatar">👤</div>
+            <ProfileCard user={user} onClose={() => window.location.reload()} />
           </div>
         </header>
 

@@ -1,0 +1,330 @@
+.profile-card-container {
+  position: relative;
+}
+
+.profile-trigger {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  transition: background-color 0.2s;
+}
+
+.profile-trigger:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-card {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 320px;
+  background: #1a0f24;
+  border-radius: 16px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.6), 0 0 40px rgba(123, 68, 224, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+  border: 1px solid rgba(123, 68, 224, 0.2);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-card-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #7b44e0 0%, #f05070 100%);
+  color: white;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.profile-card-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profile-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-card-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: white;
+}
+
+.profile-card-email {
+  margin: 4px 0 0;
+  font-size: 12px;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.profile-card-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(123, 68, 224, 0.3);
+  background: rgba(20, 10, 35, 0.8);
+}
+
+.profile-tab {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+  position: relative;
+  top: 1px;
+}
+
+.profile-tab:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(123, 68, 224, 0.1);
+}
+
+.profile-tab.active {
+  color: #7b44e0;
+  border-bottom-color: #7b44e0;
+  background: rgba(123, 68, 224, 0.05);
+}
+
+.profile-card-content {
+  padding: 16px;
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.profile-tab-content {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.profile-info-item {
+  margin-bottom: 12px;
+}
+
+.profile-info-item label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+
+.profile-info-item p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.profile-form-group {
+  margin-bottom: 12px;
+}
+
+.profile-form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 6px;
+}
+
+.profile-form-group input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(123, 68, 224, 0.3);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s, background-color 0.2s;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.profile-form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.profile-form-group input:focus {
+  outline: none;
+  border-color: #7b44e0;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(123, 68, 224, 0.15);
+}
+
+.profile-form-group input:disabled {
+  background-color: rgba(255, 255, 255, 0.03);
+  cursor: not-allowed;
+}
+
+.profile-error {
+  padding: 10px;
+  background-color: rgba(240, 80, 110, 0.15);
+  border: 1px solid rgba(240, 80, 110, 0.4);
+  border-radius: 6px;
+  color: #ff8a9b;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.profile-success {
+  padding: 10px;
+  background-color: rgba(100, 200, 100, 0.15);
+  border: 1px solid rgba(100, 200, 100, 0.4);
+  border-radius: 6px;
+  color: #7cfc7c;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.profile-btn-primary {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #7b44e0 0%, #f05070 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.profile-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(123, 68, 224, 0.5);
+}
+
+.profile-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-preview {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 200px;
+  border: 1px solid rgba(123, 68, 224, 0.3);
+}
+
+.profile-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.profile-btn-signout {
+  width: calc(100% - 32px);
+  margin: 0 16px 16px;
+  padding: 10px;
+  background: rgba(240, 80, 110, 0.15);
+  color: #ff8a9b;
+  border: 1px solid rgba(240, 80, 110, 0.3);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profile-btn-signout:hover {
+  background: rgba(240, 80, 110, 0.25);
+  border-color: rgba(240, 80, 110, 0.5);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .profile-card {
+    width: 90vw;
+    max-width: 320px;
+    right: -50vw;
+    transform: translateX(50%);
+  }
+
+  .profile-card-content {
+    max-height: 350px;
+  }
+}
+
+/* Scrollbar styling */
+.profile-card-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.profile-card-content::-webkit-scrollbar-track {
+  background: rgba(123, 68, 224, 0.1);
+  border-radius: 3px;
+}
+
+.profile-card-content::-webkit-scrollbar-thumb {
+  background: rgba(123, 68, 224, 0.4);
+  border-radius: 3px;
+}
+
+.profile-card-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 68, 224, 0.6);
+}

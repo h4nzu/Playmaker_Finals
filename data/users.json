@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1780038708850,
+    "name": "John Doe",
+    "email": "john@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$C6EUojTGOGfMGQMAgFAKYQ$k0XoxvevpAI2Awh3W0cjBeLmUjx72sQmUPpxSi01l/k",
+    "created_at": "2026-05-29T15:11:48.894623Z",
+    "updated_at": "2026-05-29T15:11:48.894623Z"
+  },
+  {
+    "id": 1780039029257,
+    "name": "Hailey",
+    "email": "hailey@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$/59zLuX8H4OwlnIOgZDyPg$GX4p5tQEI8g+9LsfVOjvs2c93fO61+xJmNR9hvHsfoA",
+    "created_at": "2026-05-29T15:17:09.304030Z",
+    "updated_at": "2026-05-29T15:17:09.304030Z"
+  },
+  {
+    "id": 1780039293482,
+    "name": "Vince",
+    "email": "vincent@gmail.com",
+    "password": "$argon2id$v=19$m=65536,t=3,p=4$kXKuFQIgBAAAYEypNSaEcA$vFRlmOyQTL5eGH7yLr/0bO42cuHuaJpJaNFLxKtbRCI",
+    "created_at": "2026-05-29T15:21:33.527687Z",
+    "updated_at": "2026-05-29T21:24:04.023601Z",
+    "profile_pic": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXFXdeztbeYwYSaEIDdFdTrfsOgFiI_oRvEw&s"
+  }
+]
