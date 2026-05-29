@@ -3,7 +3,7 @@
  * Backend handles all external API calls and caching
  */
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api'
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || '/api'
 
 // Request timeout
 const TIMEOUT = 10000 // 10 seconds
