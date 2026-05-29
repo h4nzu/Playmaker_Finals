@@ -10,11 +10,13 @@ function Login() {
   const [mode, setMode] = useState('login') // 'login' or 'signup'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
     setError('')
+    setSuccess('')
   }
 
 async function handleSubmit(e) {
@@ -49,15 +51,11 @@ async function handleSubmit(e) {
         return
       }
       
-      // Successfully registered
-      alert('Account created successfully!')
-
-      // Switch back to login mode
-      setMode('login')
-
-      // Clear form fields
+      // Successfully registered - show success and auto-switch to login mode
       setForm({ name: '', email: '', password: '', confirm: '' })
       setError('')
+      setSuccess('Account created successfully! You can now log in with your credentials.')
+      setMode('login')
       
     } catch (err) {
       setError('Network error. Please try again.')
@@ -105,6 +103,7 @@ async function handleSubmit(e) {
   function switchMode(m) {
     setMode(m)
     setError('')
+    setSuccess('')
     setForm({ name: '', email: '', password: '', confirm: '' })
   }
 
@@ -213,6 +212,7 @@ async function handleSubmit(e) {
             )}
 
             {error && <p className="login-error">{error}</p>}
+            {success && <p className="login-success">{success}</p>}
 
             <button type="submit" className="login-submit-btn" disabled={loading}>
               {loading ? 'Loading...' : mode === 'login' ? 'Sign In' : 'Create Account'}
