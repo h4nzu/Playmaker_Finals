@@ -16,7 +16,11 @@ DATA_DIR = Path(__file__).parent.parent / "data"
 USERS_FILE = DATA_DIR / "users.json"
 
 # Password hashing configuration
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Using argon2 as primary for better security and compatibility
+pwd_context = CryptContext(
+    schemes=["argon2", "bcrypt"],
+    deprecated="auto"
+)
 
 
 def ensure_data_directory():
