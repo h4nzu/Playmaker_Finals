@@ -236,6 +236,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     created_at: str
+    profile_pic: Optional[str] = None
 
     class Config:
         json_schema_extra = {
@@ -243,7 +244,8 @@ class UserResponse(BaseModel):
                 "id": 1234567890,
                 "name": "John Doe",
                 "email": "john@example.com",
-                "created_at": "2026-05-28T19:33:35.182Z"
+                "created_at": "2026-05-28T19:33:35.182Z",
+                "profile_pic": "https://example.com/avatar.jpg"
             }
         }
 

@@ -184,3 +184,64 @@ def get_user_count() -> int:
     """Get total number of registered users"""
     users = load_users()
     return len(users)
+
+
+def update_user_name(email: str, new_name: str) -> Dict[str, Any]:
+    """Update user's name"""
+    users = load_users()
+    
+    for user in users:
+        if user["email"].lower() == email.lower():
+            user["name"] = new_name
+            user["updated_at"] = datetime.now().isoformat() + "Z"
+            save_users(users)
+            logger.info(f"Username updated for: {email}")
+            return {
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"],
+                "created_at": user["created_at"]
+            }
+    
+    raise ValueError(f"User not found: {email}")
+
+
+def update_user_password(email: str, new_password: str) -> Dict[str, Any]:
+    """Update user's password"""
+    users = load_users()
+    
+    for user in users:
+        if user["email"].lower() == email.lower():
+            user["password"] = hash_password(new_password)
+            user["updated_at"] = datetime.now().isoformat() + "Z"
+            save_users(users)
+            logger.info(f"Password updated for: {email}")
+            return {
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"],
+                "created_at": user["created_at"]
+            }
+    
+    raise ValueError(f"User not found: {email}")
+
+
+def update_user_profile_pic(email: str, profile_pic_url: str) -> Dict[str, Any]:
+    """Update user's profile picture URL"""
+    users = load_users()
+    
+    for user in users:
+        if user["email"].lower() == email.lower():
+            user["profile_pic"] = profile_pic_url
+            user["updated_at"] = datetime.now().isoformat() + "Z"
+            save_users(users)
+            logger.info(f"Profile picture updated for: {email}")
+            return {
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"],
+                "created_at": user["created_at"],
+                "profile_pic": user.get("profile_pic", "")
+            }
+    
+    raise ValueError(f"User not found: {email}")

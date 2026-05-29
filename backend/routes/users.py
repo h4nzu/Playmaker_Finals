@@ -19,6 +19,25 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
+class UpdateUsernameRequest:
+    def __init__(self, email: str, new_name: str):
+        self.email = email
+        self.new_name = new_name
+
+
+class UpdatePasswordRequest:
+    def __init__(self, email: str, old_password: str, new_password: str):
+        self.email = email
+        self.old_password = old_password
+        self.new_password = new_password
+
+
+class UpdateProfilePicRequest:
+    def __init__(self, email: str, profile_pic_url: str):
+        self.email = email
+        self.profile_pic_url = profile_pic_url
+
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserRegisterRequest):
     """
@@ -199,4 +218,118 @@ async def delete_user(user_id: int):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete user"
+        )
+
+
+@router.put("/update-username", response_model=UserResponse)
+async def update_username(email: str, new_name: str):
+    """
+    Update user's username/name
+    
+    - **email**: User's email address
+    - **new_name**: New username/name
+    """
+    
+    try:
+        user = user_storage.get_user_by_email(email)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        updated_user = user_storage.update_user_name(email, new_name)
+        
+        logger.info(f"Username updated for: {email}")
+        
+        return updated_user
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        logger.error(f"Error updating username: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update username"
+        )
+
+
+@router.put("/update-password", status_code=status.HTTP_200_OK)
+async def update_password(email: str, old_password: str, new_password: str):
+    """
+    Update user's password
+    
+    - **email**: User's email address
+    - **old_password**: Current password (for verification)
+    - **new_password**: New password
+    """
+    
+    try:
+        # Verify old password
+        user = user_storage.authenticate_user(email, old_password)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid current password"
+            )
+        
+        updated_user = user_storage.update_user_password(email, new_password)
+        
+        logger.info(f"Password updated for: {email}")
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Password updated successfully",
+                "user": updated_user
+            }
+        )
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        logger.error(f"Error updating password: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update password"
+        )
+
+
+@router.put("/update-profile-pic", response_model=UserResponse)
+async def update_profile_pic(email: str, profile_pic_url: str):
+    """
+    Update user's profile picture
+    
+    - **email**: User's email address
+    - **profile_pic_url**: URL to profile picture
+    """
+    
+    try:
+        user = user_storage.get_user_by_email(email)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        updated_user = user_storage.update_user_profile_pic(email, profile_pic_url)
+        
+        logger.info(f"Profile picture updated for: {email}")
+        
+        return updated_user
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        logger.error(f"Error updating profile picture: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update profile picture"
         )
