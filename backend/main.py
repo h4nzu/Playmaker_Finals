@@ -21,7 +21,7 @@ logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 # Import routes
-from routes import games, teams, players
+from routes import games, teams, players, contact, users
 
 
 @asynccontextmanager
@@ -66,6 +66,8 @@ async def add_timing_header(request: Request, call_next):
 app.include_router(games.router)
 app.include_router(teams.router)
 app.include_router(players.router)
+app.include_router(contact.router)
+app.include_router(users.router)
 
 
 # Health check endpoint

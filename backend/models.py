@@ -2,7 +2,7 @@
 Pydantic models for data validation and serialization
 """
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 
 class Team(BaseModel):
@@ -145,3 +145,134 @@ class ErrorResponse(BaseModel):
     error: str
     fallback_data: Optional[Any] = None
     offline_mode: bool = False
+
+
+# Contact Message Models
+class ContactMessageRequest(BaseModel):
+    """Contact message request model"""
+    name: str = Field(..., min_length=1, max_length=255)
+    email: EmailStr
+    subject: str = Field(..., min_length=1, max_length=255)
+    message: str = Field(..., min_length=1, max_length=5000)
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "John Doe",
+                "email": "john@example.com",
+                "subject": "Website Inquiry",
+                "message": "I have a question about the platform..."
+            }
+        }
+
+
+class ContactMessage(BaseModel):
+    """Contact message model"""
+    id: int
+    name: str
+    email: str
+    subject: str
+    message: str
+    timestamp: str
+    status: str = "unread"  # unread or read
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": 1779996815182,
+                "name": "John Doe",
+                "email": "john@example.com",
+                "subject": "Website Inquiry",
+                "message": "I have a question about the platform...",
+                "timestamp": "2026-05-28T19:33:35.182Z",
+                "status": "read"
+            }
+        }
+
+
+class ContactMessageList(BaseModel):
+    """List of contact messages response"""
+    data: List[ContactMessage]
+    total: int = 0
+
+
+# User Models
+class UserRegisterRequest(BaseModel):
+    """User registration request model"""
+
+    name: str = Field(..., min_length=1, max_length=255)
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "John Doe",
+                "email": "john@example.com",
+                "password": "securepassword123"
+            }
+        }
+
+
+class UserLoginRequest(BaseModel):
+    """User login request model"""
+
+    email: EmailStr
+    password: str = Field(..., min_length=1)
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "john@example.com",
+                "password": "securepassword123"
+            }
+        }
+
+
+class UserResponse(BaseModel):
+    """User response model (without password)"""
+
+    id: int
+    name: str
+    email: str
+    created_at: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": 1234567890,
+                "name": "John Doe",
+                "email": "john@example.com",
+                "created_at": "2026-05-28T19:33:35.182Z"
+            }
+        }
+
+
+class User(BaseModel):
+    """User model for admin"""
+
+    id: int
+    name: str
+    email: str
+    password: str
+    created_at: str
+    updated_at: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": 1234567890,
+                "name": "John Doe",
+                "email": "john@example.com",
+                "password": "$2b$12$...",
+                "created_at": "2026-05-28T19:33:35.182Z",
+                "updated_at": "2026-05-28T19:33:35.182Z"
+            }
+        }
+
+
+class UserList(BaseModel):
+    """List of users response"""
+
+    data: List[User]
+    total: int = 0

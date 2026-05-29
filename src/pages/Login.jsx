@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Login.css'
 
+const API_BASE_URL = 'http://localhost:8000'
 const LOGO_URL = 'https://res.cloudinary.com/dv3eeuy4b/image/upload/v1778557328/LOGO_umlvbk.png'
 
 function Login() {
@@ -9,32 +10,97 @@ function Login() {
   const [mode, setMode] = useState('login') // 'login' or 'signup'
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
     setError('')
   }
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (mode === 'signup') {
-      if (!form.name || !form.email || !form.password || !form.confirm) {
-        setError('Please fill in all fields.')
-        return
-      }
-      if (form.password !== form.confirm) {
-        setError('Passwords do not match.')
-        return
-      }
-    } else {
-      if (!form.email || !form.password) {
-        setError('Please fill in all fields.')
-        return
-      }
+async function handleSubmit(e) {
+  e.preventDefault()
+  
+  if (mode === 'signup') {
+    if (!form.name || !form.email || !form.password || !form.confirm) {
+      setError('Please fill in all fields.')
+      return
     }
-    // Navigate to dashboard after successful login/signup
-    navigate('/dashboard')
+    if (form.password !== form.confirm) {
+      setError('Passwords do not match.')
+      return
+    }
+    
+    // Register user
+    try {
+      setLoading(true)
+      const response = await fetch(`${API_BASE_URL}/api/users/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password
+        })
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        setError(data.detail || 'Registration failed')
+        return
+      }
+      
+      // Successfully registered
+      alert('Account created successfully!')
+
+      // Switch back to login mode
+      setMode('login')
+
+      // Clear form fields
+      setForm({ name: '', email: '', password: '', confirm: '' })
+      setError('')
+      
+    } catch (err) {
+      setError('Network error. Please try again.')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  } else {
+    if (!form.email || !form.password) {
+      setError('Please fill in all fields.')
+      return
+    }
+
+    // Login user
+    try {
+      setLoading(true)
+      const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.detail || 'Login failed')
+        return
+      }
+
+      // Successfully logged in, navigate to dashboard
+      navigate('/dashboard')
+      
+    } catch (err) {
+      setError('Network error. Please try again.')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
+}
 
   function switchMode(m) {
     setMode(m)
@@ -100,6 +166,7 @@ function Login() {
                   value={form.name}
                   onChange={handleChange}
                   autoComplete="name"
+                  disabled={loading}
                 />
               </div>
             )}
@@ -113,6 +180,7 @@ function Login() {
                 value={form.email}
                 onChange={handleChange}
                 autoComplete="email"
+                disabled={loading}
               />
             </div>
 
@@ -125,6 +193,7 @@ function Login() {
                 value={form.password}
                 onChange={handleChange}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                disabled={loading}
               />
             </div>
 
@@ -138,14 +207,15 @@ function Login() {
                   value={form.confirm}
                   onChange={handleChange}
                   autoComplete="new-password"
+                  disabled={loading}
                 />
               </div>
             )}
 
             {error && <p className="login-error">{error}</p>}
 
-            <button type="submit" className="login-submit-btn">
-              {mode === 'login' ? 'Sign In' : 'Create Account'}
+            <button type="submit" className="login-submit-btn" disabled={loading}>
+              {loading ? 'Loading...' : mode === 'login' ? 'Sign In' : 'Create Account'}
               <span className="login-submit-arrow">›</span>
             </button>
           </form>
@@ -155,6 +225,7 @@ function Login() {
             <button
               className="login-switch-link"
               onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
+              disabled={loading}
             >
               {mode === 'login' ? 'Sign Up' : 'Sign In'}
             </button>

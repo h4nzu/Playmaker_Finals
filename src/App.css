@@ -8,15 +8,31 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 48px;
-  background: transparent;
+  padding: 0 48px;
+  height: 64px;
+  background: rgba(14, 8, 18, 0.6);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom: 1px solid rgba(123, 68, 224, 0.18);
+  box-shadow: 0 2px 32px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(123, 68, 224, 0.12);
 }
 
 .nav-brand {
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 18px;
+  font-weight: 900;
+  font-family: 'Arial Black', 'Franklin Gothic Heavy', Impact, sans-serif;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, #7b44e0 0%, #f05070 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 12px rgba(123, 68, 224, 0.5));
+  transition: filter 0.3s ease;
+}
+
+.nav-brand:hover {
+  filter: drop-shadow(0 0 20px rgba(123, 68, 224, 0.85));
 }
 
 .nav-links {
@@ -25,37 +41,50 @@
   padding: 0;
   display: flex;
   gap: 36px;
+  align-items: center;
 }
 
 .nav-links li a {
-  color: rgba(255, 255, 255, 0.85);
+  position: relative;
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   padding-bottom: 4px;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
-.nav-links li a {
-  color: rgba(255, 255, 255, 0.85);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  padding-bottom: 4px;
-  transition: color 0.2s;
-  border-bottom: 2px solid transparent;
-  transition: color 0.2s, border-bottom-color 0.4s ease;
-}
-
-.nav-links li.active a {
-  color: #fff;
-  border-bottom: 2px solid #e8843a;
+.nav-links li a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  right: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, #7b44e0, #f05070);
+  border-radius: 2px;
+  transition: left 0.3s ease, right 0.3s ease;
 }
 
 .nav-links li a:hover {
   color: #fff;
+}
+
+.nav-links li a:hover::after {
+  left: 0;
+  right: 0;
+}
+
+.nav-links li.active a {
+  color: #fff;
+}
+
+.nav-links li.active a::after {
+  left: 0;
+  right: 0;
+  background: linear-gradient(90deg, #7b44e0, #f05070);
 }
 
 /* ── Hero Section ────────────────────────────────── */

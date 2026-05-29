@@ -2,9 +2,14 @@ import express from 'express'
 import cors from 'cors'
 import axios from 'axios'
 import dotenv from 'dotenv'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 dotenv.config()
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 const app = express()
 const PORT = process.env.PORT || 8000
 
@@ -14,6 +19,20 @@ app.use(cors({
   credentials: true
 }))
 app.use(express.json())
+
+// Contact messages file path
+const contactMessagesFile = path.join(__dirname, 'data', 'contact_messages.json')
+
+// Create data directory if it doesn't exist
+const dataDir = path.join(__dirname, 'data')
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true })
+}
+
+// Initialize contact messages file if it doesn't exist
+if (!fs.existsSync(contactMessagesFile)) {
+  fs.writeFileSync(contactMessagesFile, JSON.stringify([], null, 2))
+}
 
 // In-memory cache with TTL
 class Cache {
@@ -60,6 +79,11 @@ class Cache {
 }
 
 const cache = new Cache()
+
+// BallDontLie API config
+const BALLDONTLIE_API_KEY = process.env.BALLDONTLIE_API_KEY
+const BALLDONTLIE_BASE = 'https://api.balldontlie.io/v1'
+const bdlHeaders = { Authorization: BALLDONTLIE_API_KEY }
 
 // Mock data for testing
 const mockTeams = [
@@ -109,6 +133,7 @@ app.get('/', (req, res) => {
       games: '/api/games',
       teams: '/api/teams',
       players: '/api/players',
+      contact: '/api/contact',
       health: '/api/health'
     }
   })
@@ -151,6 +176,54 @@ app.get('/api/games/team/:team_id', (req, res) => {
 })
 
 // Teams endpoints
+
+// ✅ STANDINGS ROUTE — must be before /api/teams/:team_id
+app.get('/api/teams/standings/current', async (req, res) => {
+  const cached = cache.get('teams:standings')
+  if (cached) {
+    return res.json({ data: cached, total: cached.length })
+  }
+
+  try {
+    const response = await axios.get(
+      `${BALLDONTLIE_BASE}/standings?season=2025`,
+      { headers: bdlHeaders }
+    )
+
+    const raw = response.data.data || []
+
+    const standings = raw.map(s => ({
+      team_id: s.team.id,
+      team_name: s.team.full_name,
+      team_abbreviation: s.team.abbreviation,
+      conference: s.conference,
+      division: s.division,
+      wins: s.wins,
+      losses: s.losses,
+      pct: s.wins + s.losses > 0
+        ? parseFloat((s.wins / (s.wins + s.losses)).toFixed(3))
+        : 0,
+      home_record: s.home_record || '',
+      away_record: s.road_record || '',
+      div_record: s.division_record || '',
+      conf_record: s.conference_record || '',
+      ppg: s.pts_per_game ? parseFloat(s.pts_per_game.toFixed(1)) : null,
+      opp_ppg: s.opp_pts_per_game ? parseFloat(s.opp_pts_per_game.toFixed(1)) : null,
+      diff: s.pts_per_game && s.opp_pts_per_game
+        ? parseFloat((s.pts_per_game - s.opp_pts_per_game).toFixed(1))
+        : null,
+      streak: s.streak || '',
+      last_ten: s.last_ten_record || '',
+    }))
+
+    cache.set('teams:standings', standings, 60 * 60) // 1 hour
+    res.json({ data: standings, total: standings.length })
+  } catch (err) {
+    console.error('❌ Standings fetch error:', err.message)
+    res.status(500).json({ error: 'Failed to fetch standings from BallDontLie API' })
+  }
+})
+
 app.get('/api/teams', (req, res) => {
   const cached = cache.get('teams:all')
   
@@ -195,6 +268,119 @@ app.get('/api/players', (req, res) => {
   })
 })
 
+// Contact form endpoints
+app.post('/api/contact', (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body
+
+    // Validation
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({ error: 'All fields are required' })
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' })
+    }
+
+    // Read existing messages
+    let messages = []
+    try {
+      const fileContent = fs.readFileSync(contactMessagesFile, 'utf-8')
+      messages = JSON.parse(fileContent)
+    } catch (err) {
+      messages = []
+    }
+
+    // Create new message object
+    const newMessage = {
+      id: Date.now(),
+      name,
+      email,
+      subject,
+      message,
+      timestamp: new Date().toISOString(),
+      status: 'unread'
+    }
+
+    // Add to messages array
+    messages.push(newMessage)
+
+    // Write back to file
+    fs.writeFileSync(contactMessagesFile, JSON.stringify(messages, null, 2))
+
+    res.status(201).json({
+      success: true,
+      message: 'Message received successfully',
+      data: newMessage
+    })
+  } catch (error) {
+    console.error('Error saving contact message:', error)
+    res.status(500).json({ error: 'Failed to save message' })
+  }
+})
+
+// Get all contact messages (admin view)
+app.get('/api/contact/messages', (req, res) => {
+  try {
+    const fileContent = fs.readFileSync(contactMessagesFile, 'utf-8')
+    const messages = JSON.parse(fileContent)
+    res.json({ data: messages, total: messages.length })
+  } catch (error) {
+    console.error('Error reading contact messages:', error)
+    res.status(500).json({ error: 'Failed to retrieve messages' })
+  }
+})
+
+// Mark message as read
+app.patch('/api/contact/messages/:id/read', (req, res) => {
+  try {
+    const messageId = parseInt(req.params.id)
+    let messages = []
+    
+    const fileContent = fs.readFileSync(contactMessagesFile, 'utf-8')
+    messages = JSON.parse(fileContent)
+    
+    const message = messages.find(m => m.id === messageId)
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' })
+    }
+    
+    message.status = 'read'
+    fs.writeFileSync(contactMessagesFile, JSON.stringify(messages, null, 2))
+    
+    res.json({ success: true, data: message })
+  } catch (error) {
+    console.error('Error updating message:', error)
+    res.status(500).json({ error: 'Failed to update message' })
+  }
+})
+
+// Delete message
+app.delete('/api/contact/messages/:id', (req, res) => {
+  try {
+    const messageId = parseInt(req.params.id)
+    let messages = []
+    
+    const fileContent = fs.readFileSync(contactMessagesFile, 'utf-8')
+    messages = JSON.parse(fileContent)
+    
+    const index = messages.findIndex(m => m.id === messageId)
+    if (index === -1) {
+      return res.status(404).json({ error: 'Message not found' })
+    }
+    
+    messages.splice(index, 1)
+    fs.writeFileSync(contactMessagesFile, JSON.stringify(messages, null, 2))
+    
+    res.json({ success: true, message: 'Message deleted' })
+  } catch (error) {
+    console.error('Error deleting message:', error)
+    res.status(500).json({ error: 'Failed to delete message' })
+  }
+})
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack)
@@ -206,4 +392,7 @@ app.listen(PORT, () => {
   console.log(`✅ Backend API running on http://localhost:${PORT}`)
   console.log(`📍 Health check: http://localhost:${PORT}/api/health`)
   console.log(`📚 API endpoints: GET /api/{games,teams,players}`)
+  console.log(`💬 Contact endpoint: POST /api/contact`)
+  console.log(`📧 Contact messages stored in: ${contactMessagesFile}`)
+  console.log(`🔍 View messages: GET http://localhost:${PORT}/api/contact/messages`)
 })
