@@ -17,6 +17,25 @@ function Login() {
     setError('')
   }
 
+  function validatePassword(password) {
+    const errors = []
+    
+    if (password.length < 6) {
+      errors.push('at least 6 characters')
+    }
+    if (!/[a-zA-Z]/.test(password)) {
+      errors.push('at least one letter (a-z)')
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push('at least one number (0-9)')
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      errors.push('at least one symbol (!@#$%^&*)')
+    }
+    
+    return errors
+  }
+
 async function handleSubmit(e) {
   e.preventDefault()
   
@@ -25,6 +44,17 @@ async function handleSubmit(e) {
       setError('Please fill in all fields.')
       return
     }
+
+    // Validate password strength
+    const passwordErrors = validatePassword(form.password)
+    if (passwordErrors.length > 0) {
+      setError(
+        `Password must have: ${passwordErrors.join(', ')}. ` +
+        `Example: MyPass123!`
+      )
+      return
+    }
+
     if (form.password !== form.confirm) {
       setError('Passwords do not match.')
       return
