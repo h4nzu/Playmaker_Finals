@@ -49,12 +49,13 @@ export default function ProfileCard({ user, onClose }) {
       setError('')
       setSuccess('')
       
-      const response = await fetch(
-        `${API_BASE_URL}/api/users/update-username?email=${encodeURIComponent(user.email)}&new_name=${encodeURIComponent(newName)}`,
-        { method: 'PUT', headers: { 'Content-Type': 'application/json' } }
-      )
+      const url = `${API_BASE_URL}/api/users/update-username?email=${encodeURIComponent(user.email)}&new_name=${encodeURIComponent(newName)}`
+      console.log('[v0] Updating username with URL:', url)
+      
+      const response = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' } })
 
       const data = await response.json()
+      console.log('[v0] Username update response:', data, 'Status:', response.status)
 
       if (!response.ok) {
         setError(data.detail || 'Failed to update username')
@@ -74,7 +75,7 @@ export default function ProfileCard({ user, onClose }) {
       
     } catch (err) {
       setError('Network error. Please try again.')
-      console.error(err)
+      console.error('[v0] Username update error:', err)
     } finally {
       setLoading(false)
     }

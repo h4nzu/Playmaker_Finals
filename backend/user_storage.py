@@ -83,7 +83,8 @@ def register_user(name: str, email: str, password: str) -> Dict[str, Any]:
         "email": email,
         "password": hash_password(password),  # Hash the password
         "created_at": datetime.now().isoformat() + "Z",
-        "updated_at": datetime.now().isoformat() + "Z"
+        "updated_at": datetime.now().isoformat() + "Z",
+        "profile_pic": ""  # Initialize with empty profile pic
     }
     
     users.append(new_user)
