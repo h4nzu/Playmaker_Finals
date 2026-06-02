@@ -23,11 +23,14 @@ logger = logging.getLogger(__name__)
 # Import routes
 from routes import games, teams, players, contact, users
 
+from database import init_db
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup/shutdown"""
     logger.info("🚀 Backend API starting up...")
+    init_db()
     yield
     logger.info("🛑 Backend API shutting down...")
     cache_manager.clear()

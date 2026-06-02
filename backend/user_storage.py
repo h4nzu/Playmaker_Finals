@@ -1,248 +1,167 @@
 """
-User storage handler - persists users to JSON file with hashed passwords
+User storage handler - PostgreSQL version
 """
-import json
 import os
-from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 import logging
 from passlib.context import CryptContext
+from database import get_connection
 
 logger = logging.getLogger(__name__)
 
-# Path to data directory and users file
-DATA_DIR = Path(__file__).parent.parent / "data"
-USERS_FILE = DATA_DIR / "users.json"
-
-# Password hashing configuration
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def ensure_data_directory():
-    """Ensure data directory exists"""
-    DATA_DIR.mkdir(exist_ok=True)
-
-
 def hash_password(password: str) -> str:
-    """Hash a password using bcrypt"""
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain password against a hashed password"""
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def load_users() -> List[Dict[str, Any]]:
-    """Load all users from JSON file"""
-    ensure_data_directory()
-    
-    if not USERS_FILE.exists():
-        return []
-    
-    try:
-        with open(USERS_FILE, 'r') as f:
-            return json.load(f)
-    except (json.JSONDecodeError, IOError) as e:
-        logger.error(f"Error loading users: {e}")
-        return []
-
-
-def save_users(users: List[Dict[str, Any]]):
-    """Save users to JSON file"""
-    ensure_data_directory()
-    
-    try:
-        with open(USERS_FILE, 'w') as f:
-            json.dump(users, f, indent=2)
-    except IOError as e:
-        logger.error(f"Error saving users: {e}")
-        raise
-
-
 def user_exists(email: str) -> bool:
-    """Check if a user with given email already exists"""
-    users = load_users()
-    return any(user["email"].lower() == email.lower() for user in users)
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM users WHERE LOWER(email) = LOWER(%s)", (email,))
+            return cur.fetchone() is not None
+    finally:
+        conn.close()
 
 
 def register_user(name: str, email: str, password: str) -> Dict[str, Any]:
-    """Register a new user"""
     if user_exists(email):
         raise ValueError(f"User with email {email} already exists")
-    
-    users = load_users()
-    
-    # Generate ID based on timestamp (milliseconds)
+
     user_id = int(datetime.now().timestamp() * 1000)
-    
-    new_user = {
-        "id": user_id,
-        "name": name,
-        "email": email,
-        "password": hash_password(password),  # Hash the password
-        "created_at": datetime.now().isoformat() + "Z",
-        "updated_at": datetime.now().isoformat() + "Z",
-        "profile_pic": ""  # Initialize with empty profile pic
-    }
-    
-    users.append(new_user)
-    save_users(users)
-    
-    logger.info(f"New user registered: {name} ({email})")
-    return {
-        "id": new_user["id"],
-        "name": new_user["name"],
-        "email": new_user["email"],
-        "created_at": new_user["created_at"]
-    }
+    now = datetime.now().isoformat() + "Z"
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """INSERT INTO users (id, name, email, password, profile_pic, created_at, updated_at)
+                   VALUES (%s, %s, %s, %s, '', %s, %s)""",
+                (user_id, name, email, hash_password(password), now, now)
+            )
+        conn.commit()
+        logger.info(f"New user registered: {name} ({email})")
+        return {"id": user_id, "name": name, "email": email, "created_at": now}
+    finally:
+        conn.close()
 
 
 def authenticate_user(email: str, password: str) -> Optional[Dict[str, Any]]:
-    """Authenticate a user by email and password"""
-    users = load_users()
-    
-    for user in users:
-        if user["email"].lower() == email.lower():
-            if verify_password(password, user["password"]):
-                logger.info(f"User authenticated: {email}")
-                # Return user without password
-                return {
-                    "id": user["id"],
-                    "name": user["name"],
-                    "email": user["email"],
-                    "created_at": user["created_at"]
-                }
-            else:
-                logger.warning(f"Failed login attempt: {email}")
-                return None
-    
-    logger.warning(f"Login attempt for non-existent user: {email}")
-    return None
-
-
-def get_user(user_id: int) -> Optional[Dict[str, Any]]:
-    """Get a specific user by ID (for admin)"""
-    users = load_users()
-    for user in users:
-        if user["id"] == user_id:
-            # Return user with password for admin (they need to see it)
-            return user
-    return None
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM users WHERE LOWER(email) = LOWER(%s)", (email,))
+            user = cur.fetchone()
+        if not user:
+            logger.warning(f"Login attempt for non-existent user: {email}")
+            return None
+        if not verify_password(password, user["password"]):
+            logger.warning(f"Failed login attempt: {email}")
+            return None
+        logger.info(f"User authenticated: {email}")
+        return {"id": user["id"], "name": user["name"], "email": user["email"], "created_at": user["created_at"]}
+    finally:
+        conn.close()
 
 
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
-    """Get a specific user by email"""
-    users = load_users()
-    for user in users:
-        if user["email"].lower() == email.lower():
-            return user
-    return None
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, name, email, profile_pic, created_at, updated_at FROM users WHERE LOWER(email) = LOWER(%s)", (email,))
+            return cur.fetchone()
+    finally:
+        conn.close()
 
 
 def get_all_users() -> List[Dict[str, Any]]:
-    """Get all users (for admin dashboard)"""
-    return load_users()
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, name, email, profile_pic, created_at, updated_at FROM users")
+            return cur.fetchall()
+    finally:
+        conn.close()
 
 
 def delete_user(user_id: int) -> bool:
-    """Delete a user by ID (admin function)"""
-    users = load_users()
-    original_count = len(users)
-    users = [user for user in users if user["id"] != user_id]
-    
-    if len(users) < original_count:
-        save_users(users)
-        logger.info(f"User {user_id} deleted")
-        return True
-    
-    return False
-
-
-def update_user(user_id: int, name: Optional[str] = None, email: Optional[str] = None, password: Optional[str] = None) -> Optional[Dict[str, Any]]:
-    """Update user information (admin function)"""
-    users = load_users()
-    
-    for user in users:
-        if user["id"] == user_id:
-            if name:
-                user["name"] = name
-            if email:
-                user["email"] = email
-            if password:
-                user["password"] = hash_password(password)
-            
-            user["updated_at"] = datetime.now().isoformat() + "Z"
-            save_users(users)
-            logger.info(f"User {user_id} updated")
-            return user
-    
-    return None
-
-
-def get_user_count() -> int:
-    """Get total number of registered users"""
-    users = load_users()
-    return len(users)
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+            deleted = cur.rowcount > 0
+        conn.commit()
+        return deleted
+    finally:
+        conn.close()
 
 
 def update_user_name(email: str, new_name: str) -> Dict[str, Any]:
-    """Update user's name"""
-    users = load_users()
-    
-    for user in users:
-        if user["email"].lower() == email.lower():
-            user["name"] = new_name
-            user["updated_at"] = datetime.now().isoformat() + "Z"
-            save_users(users)
-            logger.info(f"Username updated for: {email}")
-            return {
-                "id": user["id"],
-                "name": user["name"],
-                "email": user["email"],
-                "created_at": user["created_at"]
-            }
-    
-    raise ValueError(f"User not found: {email}")
+    now = datetime.now().isoformat() + "Z"
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET name = %s, updated_at = %s WHERE LOWER(email) = LOWER(%s) RETURNING id, name, email, created_at",
+                (new_name, now, email)
+            )
+            user = cur.fetchone()
+        conn.commit()
+        if not user:
+            raise ValueError(f"User not found: {email}")
+        return dict(user)
+    finally:
+        conn.close()
 
 
 def update_user_password(email: str, new_password: str) -> Dict[str, Any]:
-    """Update user's password"""
-    users = load_users()
-    
-    for user in users:
-        if user["email"].lower() == email.lower():
-            user["password"] = hash_password(new_password)
-            user["updated_at"] = datetime.now().isoformat() + "Z"
-            save_users(users)
-            logger.info(f"Password updated for: {email}")
-            return {
-                "id": user["id"],
-                "name": user["name"],
-                "email": user["email"],
-                "created_at": user["created_at"]
-            }
-    
-    raise ValueError(f"User not found: {email}")
+    now = datetime.now().isoformat() + "Z"
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET password = %s, updated_at = %s WHERE LOWER(email) = LOWER(%s) RETURNING id, name, email, created_at",
+                (hash_password(new_password), now, email)
+            )
+            user = cur.fetchone()
+        conn.commit()
+        if not user:
+            raise ValueError(f"User not found: {email}")
+        return dict(user)
+    finally:
+        conn.close()
 
 
 def update_user_profile_pic(email: str, profile_pic_url: str) -> Dict[str, Any]:
-    """Update user's profile picture URL"""
-    users = load_users()
-    
-    for user in users:
-        if user["email"].lower() == email.lower():
-            user["profile_pic"] = profile_pic_url
-            user["updated_at"] = datetime.now().isoformat() + "Z"
-            save_users(users)
-            logger.info(f"Profile picture updated for: {email}")
-            return {
-                "id": user["id"],
-                "name": user["name"],
-                "email": user["email"],
-                "created_at": user["created_at"],
-                "profile_pic": user.get("profile_pic", "")
-            }
-    
-    raise ValueError(f"User not found: {email}")
+    now = datetime.now().isoformat() + "Z"
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE users SET profile_pic = %s, updated_at = %s WHERE LOWER(email) = LOWER(%s) RETURNING id, name, email, profile_pic, created_at",
+                (profile_pic_url, now, email)
+            )
+            user = cur.fetchone()
+        conn.commit()
+        if not user:
+            raise ValueError(f"User not found: {email}")
+        return dict(user)
+    finally:
+        conn.close()
+
+
+def get_user_count() -> int:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) as count FROM users")
+            return cur.fetchone()["count"]
+    finally:
+        conn.close()
