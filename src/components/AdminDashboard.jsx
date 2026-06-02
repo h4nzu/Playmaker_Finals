@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [messageFilter, setMessageFilter] = React.useState('all')
 
   React.useEffect(() => {
+    setInitialLoad(true)
     if (activeTab === 'messages') {
       fetchMessages()
     } else if (activeTab === 'users') {
@@ -26,7 +27,7 @@ export default function AdminDashboard() {
     // Auto-refresh users tab every 3 seconds while viewing users
     if (activeTab === 'users') {
       const interval = setInterval(() => {
-        fetchUsers()
+        fetchUsers(true)
       }, 3000)
       return () => clearInterval(interval)
     }
@@ -46,16 +47,16 @@ export default function AdminDashboard() {
     }
   }
 
-  async function fetchUsers() {
+  async function fetchUsers(silent = false) {
     try {
-      setLoading(true)
+      if (!silent) setLoading(true)
       const response = await fetch(`${API_BASE_URL}/users/all`)
       const data = await response.json()
       setUsers(data.data || [])
     } catch (error) {
       console.error('Error fetching users:', error)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
       setInitialLoad(false)
     }
   }
@@ -132,7 +133,7 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('messages')}
           style={{ padding: '12px 24px' }}
         >
-          📧 Contact Messages ({messages.filter(m => m.status === 'unread').length})
+          📧 Contact Messages
         </button>
         <button 
           className={`filter-btn ${activeTab === 'users' ? 'active' : ''}`}
