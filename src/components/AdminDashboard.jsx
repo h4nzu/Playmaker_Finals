@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = React.useState([])
   const [selectedItem, setSelectedItem] = React.useState(null)
   const [loading, setLoading] = React.useState(true)
+  const [initialLoad, setInitialLoad] = React.useState(true)
   const [messageFilter, setMessageFilter] = React.useState('all')
 
   React.useEffect(() => {
@@ -41,6 +42,7 @@ export default function AdminDashboard() {
       console.error('Error fetching messages:', error)
     } finally {
       setLoading(false)
+      setInitialLoad(false)
     }
   }
 
@@ -54,6 +56,7 @@ export default function AdminDashboard() {
       console.error('Error fetching users:', error)
     } finally {
       setLoading(false)
+      setInitialLoad(false)
     }
   }
 
@@ -102,7 +105,7 @@ export default function AdminDashboard() {
     return true
   })
 
-  if (loading) {
+  if (initialLoad && loading) {
     return <div className="admin-container"><p>Loading...</p></div>
   }
 
@@ -286,7 +289,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="message-detail">
-              {selectedItem && selectedItem.password ? (
+              {selectedItem && selectedItem.email && !selectedItem.subject ? (
                 <div className="detail-content">
                   <div className="detail-header">
                     <h2>{selectedItem.name}</h2>
@@ -312,19 +315,6 @@ export default function AdminDashboard() {
                     <div className="info-row">
                       <span className="label">Email:</span>
                       <span className="value">{selectedItem.email}</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="label">Password Hash:</span>
-                      <span className="value" style={{
-                        fontFamily: 'monospace',
-                        fontSize: '11px',
-                        background: 'rgba(29, 66, 186, 0.1)',
-                        padding: '8px',
-                        borderRadius: '4px',
-                        wordBreak: 'break-all'
-                      }}>
-                        {selectedItem.password}
-                      </span>
                     </div>
                     <div className="info-row">
                       <span className="label">Created:</span>
