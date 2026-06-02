@@ -40,6 +40,11 @@ RETRY_CONFIG = {
 }
 
 # CORS Configuration
+
+_extra_origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+_extra_origins = [o.strip() for o in _extra_origins if o.strip()]
+
+
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
@@ -47,7 +52,7 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
     "https://playmaker-finals.vercel.app",
-]
+]  + _extra_origins
 
 # Logging Configuration
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
