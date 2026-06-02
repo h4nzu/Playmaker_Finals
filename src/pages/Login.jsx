@@ -76,7 +76,11 @@ async function handleSubmit(e) {
       const data = await response.json()
       
       if (!response.ok) {
-        setError(data.detail || 'Registration failed')
+        if (response.status === 409) {
+          setError('An account with this email already exists. Please log in instead.')
+        } else {
+          setError(data.detail || 'Registration failed')
+        }
         setLoading(false)
         return
       }
