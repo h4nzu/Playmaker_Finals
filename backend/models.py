@@ -256,7 +256,8 @@ class User(BaseModel):
     id: int
     name: str
     email: str
-    password: str
+    password: Optional[str] = None
+    profile_pic: Optional[str] = None
     created_at: str
     updated_at: str
 
